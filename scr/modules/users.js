@@ -20,7 +20,7 @@ class Users {
 
     static async getMembershipProposals(id) {
         const astraClient = await createAstraClient();
-        const query = 'SELECT * FROM User_MembershipProposals WHERE user_id = ?';
+        const query = 'SELECT * FROM Membership_Proposals WHERE user_id = ?';
         const params = [id];
         const result = await astraClient.execute(query, params);
         return result.rows;

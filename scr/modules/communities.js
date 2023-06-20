@@ -59,7 +59,7 @@ class Communities {
 
     static async getVariables(communityId) {
         const astraClient = await createAstraClient();
-        const query = 'SELECT * FROM Community_Variables WHERE community_id = ?';
+        const query = 'SELECT * FROM Variables WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
         return result.rows;
@@ -75,7 +75,7 @@ class Communities {
 
     static async getMembers(communityId) {
         const astraClient = await createAstraClient();
-        const query = 'SELECT * FROM Community_Members WHERE community_id = ?';
+        const query = 'SELECT * FROM Members WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
         return result.rows;
@@ -83,7 +83,7 @@ class Communities {
 
     static async getProposals(communityId) {
         const astraClient = await createAstraClient();
-        const query = 'SELECT * FROM Community_Proposals WHERE community_id = ?';
+        const query = 'SELECT * FROM Proposals WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
         return result.rows;
