@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS Default_Variable_Values (
 
 CREATE TABLE IF NOT EXISTS Communities (
     community_id uuid PRIMARY KEY,
+    parent_community_id uuid
     name text,
     status text
 );
@@ -92,7 +93,6 @@ CREATE TABLE IF NOT EXISTS Member_VotedProposals (
 CREATE TABLE IF NOT EXISTS Proposal_Supporters (
     proposal_id uuid,
     user_id uuid,
-    support int,
     PRIMARY KEY ((proposal_id), user_id)
 );
 
@@ -104,12 +104,6 @@ CREATE TABLE IF NOT EXISTS Closeness_Records (
     PRIMARY KEY ((user_id1), user_id2)
 );
 
-CREATE TABLE IF NOT EXISTS Support_Records (
-    user_id uuid,
-    proposal_id uuid,
-    support int,
-    PRIMARY KEY ((user_id), proposal_id)
-);
 
 CREATE TABLE IF NOT EXISTS User_MembershipProposals (
     user_id uuid,
@@ -118,11 +112,18 @@ CREATE TABLE IF NOT EXISTS User_MembershipProposals (
     PRIMARY KEY ((user_id), proposal_id)
 );
 
-CREATE TABLE IF NOT EXISTS Community_Pulses (
+CREATE TABLE IF NOT EXISTS Pulses (
     community_id uuid,
     pulse_id uuid,
     pulse_timestamp timestamp,
+    pulse_status int, 
     PRIMARY KEY ((community_id), pulse_id)
+);
+
+CREATE TABLE IF NOT EXISTS Pulse_Supporters (
+    pulse_id uuid,
+    user_id uuid,
+    PRIMARY KEY ((pulse_id), user_id)
 );
 
 CREATE INDEX IF NOT EXISTS ON communities(community_name);
