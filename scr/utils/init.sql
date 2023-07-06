@@ -1,11 +1,3 @@
-CREATE TABLE IF NOT EXISTS Users (
-    user_id uuid PRIMARY KEY,
-    username text,
-    password text,
-    role text,
-    email text
-);
-
 CREATE TABLE IF NOT EXISTS Community_Statements (
     community_id uuid,
     statement_id uuid,
@@ -13,16 +5,15 @@ CREATE TABLE IF NOT EXISTS Community_Statements (
     PRIMARY KEY ((community_id), statement_id)
 );
 
-CREATE TABLE IF NOT EXISTS Variables (
+CREATE TABLE IF NOT EXISTS Community_Variables (
     community_id uuid,
     variable_id uuid,
     variable_name text,
     variable_value double,
-    variable_text_value text,
     PRIMARY KEY ((community_id), variable_id)
 );
 
-CREATE TABLE IF NOT EXISTS Default_Variables (
+CREATE TABLE IF NOT EXISTS Default_Variable_Values (
     variable_id uuid,
     variable_name text,
     variable_default_value double,
@@ -36,33 +27,37 @@ CREATE TABLE IF NOT EXISTS Communities (
     status text
 );
 
-CREATE TABLE IF NOT EXISTS Members (
+CREATE TABLE IF NOT EXISTS Community_Members (
     community_id uuid,
     user_id uuid,
     seniority int,
-    fee float,
     PRIMARY KEY ((community_id), user_id)
 );
 
-CREATE TABLE IF NOT EXISTS Proposals (
+CREATE TABLE IF NOT EXISTS Community_Proposals (
     community_id uuid,
-    user_id uuid,
     proposal_id uuid,
-    proposal_type int 
     proposal_text text,
     proposal_stage text,
     proposal_support int,
     PRIMARY KEY ((community_id), proposal_id)
 );
 
-CREATE TABLE IF NOT EXISTS Member_Votes (
+CREATE TABLE IF NOT EXISTS Votes (
     proposal_id uuid,
     user_id uuid,
     vote text,
     PRIMARY KEY ((proposal_id), user_id)
 );
 
-CREATE TABLE IF NOT EXISTS Member_Support (
+CREATE TABLE IF NOT EXISTS Member_Proposals (
+    user_id uuid,
+    community_id uuid,
+    proposal_id uuid,
+    PRIMARY KEY ((user_id), proposal_id)
+);
+
+CREATE TABLE IF NOT EXISTS Support (
     user_id uuid,
     proposal_id uuid,
     support int,
@@ -71,16 +66,30 @@ CREATE TABLE IF NOT EXISTS Member_Support (
 
 CREATE TABLE IF NOT EXISTS Community_Accounts (
     community_id uuid PRIMARY KEY,
+    wallet_address: text
     account_balance double
 );
 
+CREATE TABLE IF NOT EXISTS Membership_Fees (
+    community_id uuid PRIMARY KEY,
+    user_id uuid, 
+    membership_fee double
+);
 
 CREATE TABLE IF NOT EXISTS Funding_Proposals (
     parent_community_id uuid,
     child_community_id uuid,
     proposal_id uuid,
     funding_amount double,
-    PRIMARY KEY (parent_community_id, child_community_id, proposal_id)
+    PRIMARY KEY ((parent_community_id), child_community_id), proposal_id)
+);
+
+CREATE TABLE IF NOT EXISTS Votes (
+    user_id uuid,
+    community_id uuid,
+    proposal_id uuid,
+    vote int,
+    PRIMARY KEY ((user_id), proposal_id)
 );
 
 CREATE TABLE IF NOT EXISTS Proposal_Supporters (
@@ -98,26 +107,10 @@ CREATE TABLE IF NOT EXISTS Closeness_Records (
 );
 
 
-CREATE TABLE IF NOT EXISTS Membership_Proposals (
+CREATE TABLE IF NOT EXISTS User_MembershipProposals (
     user_id uuid,
     community_id uuid,
     proposal_id uuid,
-    pitch text,
-    PRIMARY KEY ((user_id), proposal_id)
-);
-
-CREATE TABLE IF NOT EXISTS Statements_Proposals (
-    proposal_id uuid,
-    statement_text text,
-    replace_statement uuid 
-    PRIMARY KEY ((user_id), proposal_id)
-);
-
-CREATE TABLE IF NOT EXISTS Variables_Proposals (
-    proposal_id uuid,
-    variable_id uuid,
-    value int,
-    value_text text,
     PRIMARY KEY ((user_id), proposal_id)
 );
 
@@ -135,17 +128,17 @@ CREATE TABLE IF NOT EXISTS Pulse_Supporters (
     PRIMARY KEY ((pulse_id), user_id)
 );
 
-CREATE INDEX IF NOT EXISTS ON Communities(community_name);
-CREATE INDEX IF NOT EXISTS ON Proposals(proposal_status);
-CREATE INDEX IF NOT EXISTS ON Members(user_id);
-CREATE INDEX IF NOT EXISTS ON Votes(proposal_id);
-CREATE INDEX IF NOT EXISTS ON Support(user_id);
-CREATE INDEX IF NOT EXISTS ON Support(proposal_id);
-CREATE INDEX IF NOT EXISTS ON Pulse_proposals(proposal_status);
-CREATE INDEX IF NOT EXISTS ON Closeness(last_calculation);
-CREATE INDEX IF NOT EXISTS ON Pulse_support(user_id);
-CREATE INDEX IF NOT EXISTS ON Pulse_support(pulse_id);
-CREATE INDEX IF NOT EXISTS ON Statements(community_id);
-CREATE INDEX IF NOT EXISTS ON Variables(community_id);
-CREATE INDEX IF NOT EXISTS ON Pulse(community_id);
-CREATE INDEX IF NOT EXISTS ON Pulse_proposals(pulse_id);
+CREATE INDEX IF NOT EXISTS ON communities(community_name);
+CREATE INDEX IF NOT EXISTS ON proposals(proposal_status);
+CREATE INDEX IF NOT EXISTS ON members(user_id);
+CREATE INDEX IF NOT EXISTS ON votes(proposal_id);
+CREATE INDEX IF NOT EXISTS ON support(user_id);
+CREATE INDEX IF NOT EXISTS ON support(proposal_id);
+CREATE INDEX IF NOT EXISTS ON pulse_proposals(proposal_status);
+CREATE INDEX IF NOT EXISTS ON closeness(last_calculation);
+CREATE INDEX IF NOT EXISTS ON pulse_support(user_id);
+CREATE INDEX IF NOT EXISTS ON pulse_support(pulse_id);
+CREATE INDEX IF NOT EXISTS ON statements(community_id);
+CREATE INDEX IF NOT EXISTS ON community_variables(community_id);
+CREATE INDEX IF NOT EXISTS ON pulse(community_id);
+CREATE INDEX IF NOT EXISTS ON pulse_proposals(pulse_id);
