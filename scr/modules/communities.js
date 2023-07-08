@@ -67,7 +67,7 @@ class Communities {
 
     static async getStatements(communityId) {
         const astraClient = await createAstraClient();
-        const query = 'SELECT * FROM Community_Statements WHERE community_id = ?';
+        const query = 'SELECT * FROM Statements WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
         return result.rows;

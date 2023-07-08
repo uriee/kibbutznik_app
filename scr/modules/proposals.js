@@ -1,41 +1,64 @@
-const cassandra = require('cassandra-driver');
+// models/Proposals.js
+const createAstraClient = require('../path_to_your_file');
 
-const client = new cassandra.Client({ 
-  contactPoints: ['localhost'],
-  localDataCenter: 'datacenter1',
-  keyspace: 'kibbutznik'
-});
+class Proposals {
+    static async create(proposal) {
+        const astraClient = await createAstraClient();
+        const query = 'INSERT INTO Proposals (community_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support) VALUES (?, ?, ?, ?, ?, ?)';
+        const params = [proposal.community_id, proposal.proposal_id, proposal.proposal_text, proposal.proposal_status, proposal.proposal_type, proposal.proposal_support];
+        await astraClient.execute(query, params);
+    }
 
-const Proposals = {};
+    static async delete(proposalId) {
+        const astraClient = await createAstraClient();
+        const query = 'DELETE FROM Proposals WHERE proposal_id = ?';
+        const params = [proposalId];
+        await astraClient.execute(query, params);
+    }
 
-// Method to get proposal by id
-Proposals.findById = function(id) {
-  const query = 'SELECT * FROM proposals WHERE proposal_id = ?';
-  return client.execute(query, [ id ], { prepare: true });
+    static async findById(proposalId) {
+        const astraClient = await createAstraClient();
+        const query = 'SELECT * FROM Proposals WHERE proposal_id = ?';
+        const params = [proposalId];
+        const result = await astraClient.execute(query, params);
+        return result.rows;
+    }
+
+    static async find(communityId, proposalStatus = null, proposalType = null) {
+      const astraClient = await createAstraClient();
+  
+      let query = 'SELECT * FROM Proposals WHERE community_id = ?';
+      let params = [communityId];
+  
+      if (proposalStatus) {
+          query += ' AND proposal_status = ?';
+          params.push(proposalStatus);
+      }
+  
+      if (proposalType) {
+          query += ' AND proposal_type = ?';
+          params.push(proposalType);
+      }
+  
+      const result = await astraClient.execute(query, params);
+      return result.rows;
+  }
+
+  static async findProposalsByPulse(pulseId) {
+    const astraClient = await createAstraClient();
+    const query = 'SELECT * FROM Proposals WHERE pulse_id = ?';
+    const params = [pulseId];
+    const result = await astraClient.execute(query, params);
+    return result.rows;
 }
 
-// Method to get all proposals
-Proposals.findAll = function() {
-  const query = 'SELECT * FROM proposals';
-  return client.execute(query, [], { prepare: true });
-}
-
-// Method to create a new proposal
-Proposals.create = function(proposal) {
-  const query = 'INSERT INTO proposals (proposal_id, community_id, creator_id, title, description, status, support, end_time, creation_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-  return client.execute(query, [ proposal.proposal_id, proposal.community_id, proposal.creator_id, proposal.title, proposal.description, proposal.status, proposal.support, proposal.end_time, proposal.creation_time ], { prepare: true });
-}
-
-// Method to update a proposal's status
-Proposals.updateStatus = function(proposal_id, status) {
-  const query = 'UPDATE proposals SET status = ? WHERE proposal_id = ?';
-  return client.execute(query, [ status, proposal_id ], { prepare: true });
-}
-
-// Method to delete a proposal
-Proposals.delete = function(proposal_id) {
-  const query = 'DELETE FROM proposals WHERE proposal_id = ?';
-  return client.execute(query, [ proposal_id ], { prepare: true });
+    static async findByType(proposalType) {
+        const astraClient = await createAstraClient();
+        const query = 'SELECT * FROM Proposals WHERE proposal_type = ?';
+        const params = [proposalType];
+        const result = await astraClient.execute(query, params);
+        return result.rows;
+    }
 }
 
 module.exports = Proposals;

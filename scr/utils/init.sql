@@ -1,11 +1,12 @@
-CREATE TABLE IF NOT EXISTS Community_Statements (
+CREATE TABLE IF NOT EXISTS Statements (
     community_id uuid,
     statement_id uuid,
+    status int, 
     statement_text text,
     PRIMARY KEY ((community_id), statement_id)
 );
 
-CREATE TABLE IF NOT EXISTS Community_Variables (
+CREATE TABLE IF NOT EXISTS Variables (
     community_id uuid,
     variable_id uuid,
     variable_name text,
@@ -27,19 +28,21 @@ CREATE TABLE IF NOT EXISTS Communities (
     status text
 );
 
-CREATE TABLE IF NOT EXISTS Community_Members (
+CREATE TABLE IF NOT EXISTS Members (
     community_id uuid,
     user_id uuid,
     seniority int,
     PRIMARY KEY ((community_id), user_id)
 );
 
-CREATE TABLE IF NOT EXISTS Community_Proposals (
+CREATE TABLE IF NOT EXISTS Proposals (
     community_id uuid,
     proposal_id uuid,
     proposal_text text,
-    proposal_stage text,
+    proposal_status text,
+    propsal_type
     proposal_support int,
+    pulse_id uuid
     PRIMARY KEY ((community_id), proposal_id)
 );
 
@@ -64,7 +67,7 @@ CREATE TABLE IF NOT EXISTS Support (
     PRIMARY KEY ((user_id), proposal_id)
 );
 
-CREATE TABLE IF NOT EXISTS Community_Accounts (
+CREATE TABLE IF NOT EXISTS Accounts (
     community_id uuid PRIMARY KEY,
     wallet_address: text
     account_balance double
