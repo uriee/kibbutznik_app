@@ -5,8 +5,8 @@ class Variables {
     static async create(variable) {
         const astraClient = await createAstraClient();
         // assuming `variable` is an object with fields: community_id, variable_id, variable_name, variable_value
-        const query = 'INSERT INTO Variables (community_id, variable_id, variable_name, variable_value) VALUES (?, ?, ?, ?)';
-        const params = [variable.community_id, variable.variable_id, variable.variable_name, variable.variable_value];
+        const query = 'INSERT INTO Variables (community_id, variable_id, variable_name, variable_value, variable_desc,) VALUES (?, ?, ?, ?)';
+        const params = [variable.community_id, variable.variable_id, variable.variable_name, variable.variable_value, variable.variable_desc];
         await astraClient.execute(query, params);
     }
 
@@ -36,7 +36,8 @@ class Variables {
                 community_id: communityId,
                 variable_id: defaultVariable.variable_id,
                 variable_name: defaultVariable.variable_name,
-                variable_value: defaultVariable.variable_default_value
+                variable_value: defaultVariable.variable_default_value,
+                variable_desc: defaultVariable.variable_desc
             });
         }
     }

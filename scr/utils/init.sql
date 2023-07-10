@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS Variables (
     variable_id uuid,
     variable_name text,
     variable_value double,
+    variable_desc text,
     PRIMARY KEY ((community_id), variable_id)
 );
 
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS Default_Variable_Values (
     variable_id uuid,
     variable_name text,
     variable_default_value double,
+    variable_desc text,
     PRIMARY KEY (variable_id)
 );
 
