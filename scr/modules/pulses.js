@@ -32,5 +32,9 @@ class Pulses {
         const params = [pulse.community_id, pulse.pulse_id, pulse.pulse_timestamp];
         await astraClient.execute(query, params);
     }
+
+    /*
+    When Pulse in run:
+    */
 }
 module.exports = Pulses;

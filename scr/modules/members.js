@@ -2,14 +2,21 @@
 const createAstraClient = require('../path_to_your_file');
 
 class Members {
-    static async findByUserId(userId) {
+    static async find(userId, community_id) {
         const astraClient = await createAstraClient();
-        const query = 'SELECT * FROM Members WHERE user_id = ?';
-        const params = [userId];
+        let query, params;
+
+        if(community_id) {
+            query = 'SELECT * FROM Members WHERE user_id = ? AND community_id = ?';
+            params = [userId, community_id];
+        } else {
+            query = 'SELECT * FROM Members WHERE user_id = ?';
+            params = [userId];
+        }
+        
         const result = await astraClient.execute(query, params);
         return result.rows;
     }
-
     static async create(member) {
         const astraClient = await createAstraClient();
         // assuming `member` is an object with fields: community_id, user_id, seniority
@@ -18,10 +25,20 @@ class Members {
         await astraClient.execute(query, params);
     }
 
-    static async getProposals(userId) {
+    /*  all proposals have a link to memebrs table through the member_id field.
+        only in the memrship proposals this fields contains he user_id instead */
+    static async getMembershipProposals(userId) {
         const astraClient = await createAstraClient();
-        const query = 'SELECT * FROM Member_Proposals WHERE user_id = ?';
+        const query = 'SELECT * FROM Proposals WHERE member_id = ?';
         const params = [userId];
+        const result = await astraClient.execute(query, params);
+        return result.rows;
+    }
+
+    static async getProposals(memberId) {
+        const astraClient = await createAstraClient();
+        const query = 'SELECT * FROM Proposals WHERE member_id = ?';
+        const params = [memberId];
         const result = await astraClient.execute(query, params);
         return result.rows;
     }
@@ -36,8 +53,24 @@ class Members {
 
     static async getVotedProposals(userId) {
         const astraClient = await createAstraClient();
-        const query = 'SELECT * FROM Member_VotedProposals WHERE user_id = ?';
+        const query = 'SELECT * FROM Votes WHERE user_id = ?';
         const params = [userId];
+        const result = await astraClient.execute(query, params);
+        return result.rows;
+    }
+
+    static async seniorityGTE(community_id, seniority) {
+        const astraClient = await createAstraClient();
+        const query = 'SELECT * FROM Members WHERE community_id = ? AND seniority >= ?';
+        const params = [community_id, seniority];
+        const result = await astraClient.execute(query, params);
+        return result.rows;
+    }
+
+    static async seniorityLTE(community_id, seniority) {
+        const astraClient = await createAstraClient();
+        const query = 'SELECT * FROM Members WHERE community_id = ? AND seniority <= ?';
+        const params = [community_id, seniority];
         const result = await astraClient.execute(query, params);
         return result.rows;
     }

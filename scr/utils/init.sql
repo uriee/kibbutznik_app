@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS Default_Variable_Values (
 CREATE TABLE IF NOT EXISTS Communities (
     community_id uuid PRIMARY KEY,
     parent_community_id uuid
+    memebers_count int, 
     name text,
     status text
 );
@@ -46,19 +47,30 @@ CREATE TABLE IF NOT EXISTS Proposals (
     PRIMARY KEY ((community_id), proposal_id)
 );
 
-CREATE TABLE IF NOT EXISTS Votes (
-    proposal_id uuid,
-    user_id uuid,
-    vote text,
-    PRIMARY KEY ((proposal_id), user_id)
-);
-
-CREATE TABLE IF NOT EXISTS Member_Proposals (
+CREATE TABLE IF NOT EXISTS User_Membership_Proposals (
     user_id uuid,
     community_id uuid,
     proposal_id uuid,
     PRIMARY KEY ((user_id), proposal_id)
 );
+
+CREATE TABLE IF NOT EXISTS Variables_Proposals (
+    variable_id uuid,
+    proposal_id uuid,
+    community_id uuid,
+    variable_new_value text,
+    PRIMARY KEY ((variable_id), proposal_id)
+);
+
+
+CREATE TABLE IF NOT EXISTS Statements_Proposals (
+    statement_id uuid,
+    proposal_id uuid,
+    community_id uuid,
+    statement_text text,
+    PRIMARY KEY ((statement_id), proposal_id)
+);
+
 
 CREATE TABLE IF NOT EXISTS Support (
     user_id uuid,
@@ -87,6 +99,7 @@ CREATE TABLE IF NOT EXISTS Funding_Proposals (
     PRIMARY KEY ((parent_community_id), child_community_id), proposal_id)
 );
 
+
 CREATE TABLE IF NOT EXISTS Votes (
     user_id uuid,
     community_id uuid,
@@ -109,13 +122,6 @@ CREATE TABLE IF NOT EXISTS Closeness_Records (
     PRIMARY KEY ((user_id1), user_id2)
 );
 
-
-CREATE TABLE IF NOT EXISTS User_MembershipProposals (
-    user_id uuid,
-    community_id uuid,
-    proposal_id uuid,
-    PRIMARY KEY ((user_id), proposal_id)
-);
 
 CREATE TABLE IF NOT EXISTS Pulses (
     community_id uuid,
