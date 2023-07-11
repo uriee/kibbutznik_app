@@ -1,4 +1,13 @@
 // models/Vote.js
+/*
+CREATE TABLE IF NOT EXISTS Votes (
+    user_id uuid,
+    community_id uuid,
+    proposal_id uuid,
+    vote int,
+    PRIMARY KEY ((user_id), proposal_id)
+);
+*/
 const createAstraClient = require('../path_to_your_file');
 
 class Vote {
@@ -45,6 +54,25 @@ class Vote {
         const result = await astraClient.execute(query, params);
         return result.rows;
     }
+
+    static async countVotes(proposalId) {
+        if (!proposalId) {
+            return null;
+        }
+    
+        const astraClient = await createAstraClient();
+        const query = 'SELECT vote, COUNT(*) as count FROM Votes WHERE proposal_id = ? GROUP BY vote';
+        const params = [proposalId];
+    
+        const result = await astraClient.execute(query, params);
+    
+        let counts = {};
+        result.rows.forEach(row => {
+            counts[row.vote] = row.count;
+        });
+    
+        return counts;
+    }    
 }
 
 module.exports = Vote;

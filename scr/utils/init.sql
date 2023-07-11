@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS Statements (
 );
 
 CREATE TABLE IF NOT EXISTS Variables (
-    community_id uuid,
+    community_id uuid,from TLV_parser import parse_tlv, parse_tlv_value
     variable_id uuid,
     variable_name text,
     variable_value double,

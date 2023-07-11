@@ -1,4 +1,13 @@
 // models/Support.js
+/*
+CREATE TABLE IF NOT EXISTS Support (
+    user_id uuid,
+    proposal_id uuid,
+    support int,
+    PRIMARY KEY ((user_id), proposal_id)
+);
+*/
+
 const createAstraClient = require('../path_to_your_file');
 
 class Support {
@@ -41,6 +50,25 @@ class Support {
         const result = await astraClient.execute(query, params);
         return result.rows;
     }
+
+    static async countSupport(proposalId) {
+        if (!proposalId) {
+            return null;
+        }
+    
+        const astraClient = await createAstraClient();
+        const query = 'SELECT support, COUNT(*) as count FROM Support WHERE proposal_id = ? GROUP BY support';
+        const params = [proposalId];
+    
+        const result = await astraClient.execute(query, params);
+    
+        let counts = {};
+        result.rows.forEach(row => {
+            counts[row.support] = row.count;
+        });
+    
+        return counts;
+    }    
 }
 
 module.exports = Support;
