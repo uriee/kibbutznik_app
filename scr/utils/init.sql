@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS Proposals (
     PRIMARY KEY ((community_id), proposal_id)
 );
 
-CREATE TABLE IF NOT EXISTS User_Membership_Proposals (
+CREATE TABLE IF NOT EXISTS Membership_Proposals (
     user_id uuid,
     community_id uuid,
     proposal_id uuid,
