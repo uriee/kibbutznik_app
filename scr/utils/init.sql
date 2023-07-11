@@ -110,11 +110,6 @@ CREATE TABLE IF NOT EXISTS Votes (
     PRIMARY KEY ((user_id), proposal_id)
 );
 
-CREATE TABLE IF NOT EXISTS Proposal_Supporters (
-    proposal_id uuid,
-    user_id uuid,
-    PRIMARY KEY ((proposal_id), user_id)
-);
 
 CREATE TABLE IF NOT EXISTS Closeness_Records (
     user_id1 uuid,
@@ -137,6 +132,18 @@ CREATE TABLE IF NOT EXISTS Pulse_Supporters (
     pulse_id uuid,
     user_id uuid,
     PRIMARY KEY ((pulse_id), user_id)
+);
+
+CCREATE TABLE IF NOT EXISTS Comments (
+    comment_id uuid,
+    parent_comment_id uuid,
+    entity_id uuid,
+    entity_type text,
+    user_id uuid,
+    comment_text text,
+    comment_timestamp timestamp,
+    score int,
+    PRIMARY KEY (comment_id)
 );
 
 CREATE INDEX IF NOT EXISTS ON communities(community_name);
