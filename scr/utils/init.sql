@@ -7,8 +7,9 @@ CREATE TABLE IF NOT EXISTS Statements (
 );
 
 CREATE TABLE IF NOT EXISTS Variables (
-    community_id uuid,from TLV_parser import parse_tlv, parse_tlv_value
+    community_id uuid,
     variable_id uuid,
+    variable_type text,
     variable_name text,
     variable_value double,
     variable_desc text,
@@ -22,6 +23,7 @@ CREATE TABLE IF NOT EXISTS Default_Variable_Values (
     variable_desc text,
     PRIMARY KEY (variable_id)
 );
+
 
 CREATE TABLE IF NOT EXISTS Communities (
     community_id uuid PRIMARY KEY,
@@ -46,6 +48,8 @@ CREATE TABLE IF NOT EXISTS Proposals (
     propsal_type
     proposal_support int,
     pulse_id uuid
+    created_at timestamp
+    updated_at timestamp
     PRIMARY KEY ((community_id), proposal_id)
 );
 
@@ -59,7 +63,6 @@ CREATE TABLE IF NOT EXISTS Membership_Proposals (
 CREATE TABLE IF NOT EXISTS Variables_Proposals (
     variable_id uuid,
     proposal_id uuid,
-    community_id uuid,
     variable_new_value text,
     PRIMARY KEY ((variable_id), proposal_id)
 );

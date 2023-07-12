@@ -25,7 +25,29 @@ class Variables {
         return result.rows[0];
     }
 
-    static async initiateCommunityVariables(communityId) {
+    static async getVariableValue(communityId, variableType) {
+        const astraClient = await createAstraClient();
+        const query = 'SELECT variable_value FROM Variables WHERE community_id = ? AND variable_type = ?';
+        const params = [communityId, variableType];
+
+        const result = await astraClient.execute(query, params);
+        if (result.rows.length > 0) {
+            return result.rows[0].variable_value;
+        } else {
+            return null;
+        }
+    }
+
+    static async updateVariableValue(communityId, variableType, newValue) {
+        const astraClient = await createAstraClient();
+        const query = 'UPDATE Variables SET variable_value = ? WHERE community_id = ? AND variable_type = ?';
+        const params = [newValue, communityId, variableType];
+
+        await astraClient.execute(query, params);
+    }
+
+
+    static async initializeCommunityVariables(communityId) {
         const astraClient = await createAstraClient();
         const query = 'SELECT * FROM Default_Variable_Values';
         const result = await astraClient.execute(query);
