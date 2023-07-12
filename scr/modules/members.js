@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS Membership_Proposals (
     PRIMARY KEY ((user_id), proposal_id)
 );
 */
+
 const createAstraClient = require('../path_to_your_file');
 
 class Members {

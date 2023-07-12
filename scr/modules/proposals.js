@@ -1,4 +1,16 @@
 // models/Proposals.js
+/*
+CREATE TABLE IF NOT EXISTS Proposals (
+    community_id uuid,
+    proposal_id uuid,
+    proposal_text text,
+    proposal_status text,
+    propsal_type
+    proposal_support int,
+    pulse_id uuid
+    PRIMARY KEY ((community_id), proposal_id)
+);
+*/
 const createAstraClient = require('../path_to_your_file');
 
 

@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS Pulse_Supporters (
     PRIMARY KEY ((pulse_id), user_id)
 );
 
-CCREATE TABLE IF NOT EXISTS Comments (
+CREATE TABLE IF NOT EXISTS Comments (
     comment_id uuid,
     parent_comment_id uuid,
     entity_id uuid,
