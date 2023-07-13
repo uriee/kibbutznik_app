@@ -25,112 +25,104 @@ class DefaultVariables {
         const result = await astraClient.execute(query, params);
         return result.rows;
     }
-    
+    ['Membership', 'ThrowOut', 'AddStatement', 'RemoveStatement','replaceStatement', 'ChangeVariable',
+                            'AddAction', 'EndAction', 'JoinAction', 'Funding', 'Payment', 'payBack', 'Dividend']
     base = [
         {
-            "type" : "PUS",
-            "name" : "Pulse Support",
+            "type" : "PulseSupport",
             "value" : 50,
             "desc" : "The precentage of members support nedded to execute a pulse.",
-            "proposals" : [ ]
         },
         {
-            "type" : "PS",
-            "name" : "Proposal Support",
+            "type" : "ProposalSupport",
             "value" : 15,
             "desc" : "The precentage of members support nedded to assiged a Proposal to a pulse.",
-            "proposals" : [ ]
         },
         {
-            "type" : "CV",
-            "name" : "Change Variable",
+            "type" : "ChangeVariable",
             "value" : 50,
             "desc" : "The precentage of members vote nedded for changing a Variable value.",
-            "proposals" : [ ]
         },
         {
             "type" : "ME",
-            "name" : "Membership",
+            "type" : "Membership",
             "value" : 50,
             "desc" : "The precentage of members vote nedded to grant Membership to a User.",
-            "proposals" : [ ]
         },
         {
-            "type" : "EM",
-            "name" : "End Membership",
+            "type" : 'ThrowOut',
             "value" : 60,
             "desc" : "The precentage of members vote nedded to Revoke Membership to a User.",
-            "proposals" : [ ]
         },
         {
-            "type" : "NS",
-            "name" : "New Statement",
+            "type" : "AddStatement",
             "value" : 50,
             "desc" : "The precentage of members vote nedded to accept a new Statement.",
-            "proposals" : [ ]
         },
         {
-            "type" : "CS",
-            "name" : "Cancel Statement",
+            "type" : "RemoveStatement",
             "value" : 60,
             "desc" : "The precentage of members vote nedded to Cancel Statement.",
-            "proposals" : [ ]
         },
         {
-            "type" : "NA",
-            "name" : "New Action",
+            "type" : "AddAction",
             "value" : 50,
             "desc" : "The precentage of members vote nedded to accept a new Action.",
-            "proposals" : [ ]
         },
         {
-            "type" : "CA",
-            "name" : "Cancel Action",
+            "type" : "EndAction",
             "value" : 60,
             "desc" : "The precentage of members vote nedded to Cancel Action.",
-            "proposals" : [ ]
         },
         {
-            "type" : "RS",
-            "name" : "Replace Statement",
+            "type" : "ReplaceStatement",
             "value" : 60,
             "desc" : "The precentage of members vote nedded to Replace Statement.",
-            "proposals" : [ ]
         },
         {
-            "type" : "CM",
-            "name" : "Committee Member",
+            "type" : "JoinAction",
             "value" : 50,
             "desc" : "The precentage of members vote nedded for assigning a Member to an Action.",
-            "proposals" : [ ]
         },
         {
-            "type" : "OC",
-            "name" : "Out Of Committee",
+            "type" : "Funding",
             "value" : 50,
-            "desc" : "The precentage of members vote nedded for throw a Member from an Action.",
-            "proposals" : [ ]
+            "desc" : "The precentage of members vote nedded to Fund an Action.",
         },
         {
-            "type" : "MinC",
-            "name" : "MinCommittee",
+            "type" : "Payment",
+            "value" : 50,
+            "desc" : "The precentage of members vote nedded for making a Payment.",
+        },
+        {
+            "type" : "payBack",
+            "value" : 50,
+            "desc" : "The precentage of members vote nedded for decide on an action payBack.",
+        },
+        {
+            "type" : "Dividend",
+            "value" : 50,
+            "desc" : "The precentage of members vote nedded for decide to give Dividend to members.",
+        },
+        {
+            "type" : "MinCommittee",
             "value" : 2,
             "desc" : "The Minimun size of an Action Committee.",
-            "proposals" : [ ]
         },
         {
             "type" : "MaxAge",
-            "name" : "MaxAge",
             "value" : 2,
             "desc" : "The Maximim 'OutThere' Proposal Age (in Pulses).",
-            "proposals" : [ ]
         },
         {
             "type" : "Name",
-            "name" : "Name",
             "value" : "No Name",
             "desc" : "The Communitty Name.",
-            "proposals" : [ ]
+        },
+        {
+            "type" : "restictPayments",
+            "value" : True,
+            "desc" : "Only allow payments from a community that has no actions",
         }
     ]
     async PopulateByBase() {

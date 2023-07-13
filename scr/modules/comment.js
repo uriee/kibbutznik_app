@@ -1,3 +1,16 @@
+/*
+CREATE TABLE IF NOT EXISTS Comments (
+    comment_id uuid,
+    parent_comment_id uuid,
+    entity_id uuid,
+    entity_type text,
+    user_id uuid,
+    comment_text text,
+    comment_timestamp timestamp,
+    score int,
+    PRIMARY KEY (comment_id)
+);
+*/
 const createAstraClient = require('./path_to_your_astra_client');
 
 class Comments {

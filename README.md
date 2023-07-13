@@ -61,6 +61,7 @@ Kibbutznik App
 
 
 TODO: 
+Vote -> passorfail
 Vote -> pass -> execute proposal
 Vote -> fail -> incrementStatus(_,false)
 support+ -> assign to pulse

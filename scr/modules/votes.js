@@ -54,25 +54,7 @@ class Vote {
         const result = await astraClient.execute(query, params);
         return result.rows;
     }
-
-    static async countVotes(proposalId) {
-        if (!proposalId) {
-            return null;
-        }
     
-        const astraClient = await createAstraClient();
-        const query = 'SELECT vote, COUNT(*) as count FROM Votes WHERE proposal_id = ? GROUP BY vote';
-        const params = [proposalId];
-    
-        const result = await astraClient.execute(query, params);
-    
-        let counts = {};
-        result.rows.forEach(row => {
-            counts[row.vote] = row.count;
-        });
-    
-        return counts;
-    }    
 }
 
 module.exports = Vote;
