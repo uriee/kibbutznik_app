@@ -10,12 +10,6 @@ class Variables {
         await astraClient.execute(query, params);
     }
 
-    static async updateById(proposalId, variableId, newValue) {
-        const astraClient = await createAstraClient();
-        const query = 'UPDATE Variables SET variable_value = ? WHERE variable_id = ? AND proposal_id = ?';
-        const params = [newValue, variableId, proposalId];
-        await astraClient.execute(query, params);
-    }
 
     static async findById(variableId) {
         const astraClient = await createAstraClient();

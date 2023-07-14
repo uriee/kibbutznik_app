@@ -1,13 +1,33 @@
 // models/Statements.js
+/* 
+CREATE TABLE IF NOT EXISTS Statements (
+    community_id uuid,
+    statement_id uuid PRIMARY KEY,
+    status int, 
+    statement_text text,
+);
+*/
 const createAstraClient = require('../path_to_your_file');
 
 class Statements {
     
     static async create(statement) {
         const astraClient = await createAstraClient();
-        const query = 'INSERT INTO Statements (community_id, statement_id, status, statement_text) VALUES (?, ?, ?)';
-        const params = [statement.community_id, statement.statement_id, statement.status, statement.statement_text];
+        const query = 'INSERT INTO Statements (community_id, status, statement_text) VALUES (?, ?, ?)';
+        const params = [statement.community_id, 1, statement.statement_text];
         await astraClient.execute(query, params);
+    }
+
+    static async removeStatement(statement_id) {
+        const astraClient = await createAstraClient();
+        const query = 'UPDATE Statements SET status = ? WHERE statement_id = ?';
+        const params = [2, statement_id]; // 2 is status for removed
+        await astraClient.execute(query, params);
+    }
+
+    static async replaceStatement(statement_id, statement) {
+        await this.removeStatement(statement_id)
+        await this.create(statement)
     }
 
     static async findByCommunityId(communityId, statementId = null, status = null, statementText = null) {

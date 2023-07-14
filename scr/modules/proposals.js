@@ -11,6 +11,11 @@ CREATE TABLE IF NOT EXISTS Proposals (
     PRIMARY KEY ((community_id), proposal_id)
 );
 */
+const Members = require('./members.js');
+const Statements = require('./statements.js');
+const Variables = require('./variables.js');
+const Communities = require('./communities.js');
+
 const createAstraClient = require('../path_to_your_file');
 
 
@@ -156,6 +161,24 @@ class Proposals {
         return counts;
     }    
 
+
+    static async handleProposals(community_id) {
+        try {
+            const proposals = await this.AcceptedOrRejected(community_id);
+            
+            for (const [proposal_id, isAccepted] of Object.entries(proposals)) {
+                if (isAccepted) {
+                    await this.executeProposal(proposal_id);
+                    await this.UpdateStatus(proposal_id, true);  
+                } else {
+                    await this.UpdateStatus(proposal_id, false); 
+                }
+            }
+        } catch (error) {
+            console.error(`Error handling proposals: ${error.message}`);
+        }
+    }
+
     static async AcceptedOrRejected(community_id) {
         if (!community_id) {
             return null;
@@ -196,6 +219,43 @@ class Proposals {
         }
     
         return results;
+    }
+
+    static async executeProposal(proposal_id) {
+        const astraClient = await createAstraClient();
+
+        // Fetch the proposal
+        const query = 'SELECT * FROM Proposals WHERE proposal_id = ?';
+        const params = [proposal_id];
+        const result = await astraClient.execute(query, params);
+        const proposal = result.rows[0];
+
+        switch(proposal.type) {
+            case 'Membership':
+                return await Members.create(proposal.community_id, proposal.val_uuid);
+            case 'ThrowOut':
+                return await Members.throwOut(proposal.community_id, proposal.val_uuid);
+            case 'AddStatement':
+                return await Statements.create(proposal.community_id,proposal.val_text);
+            case 'RemoveStatement':
+                return await Statements.removeStatement(proposal.community_id, proposal.val_uuid);
+            case 'ReplaceStatement':
+                return await Statements.replaceStatement(proposal.community_id, proposal.val_uuid, proposal.val_text);
+            case 'ChangeVariable':
+                return await Variables.updateVariableValue(proposal.community_id, proposal.val_uuid, proposal.val_text);
+            case 'AddAction':
+                return await Communities.create(proposal.val_text, proposal.community_id);
+            case 'EndAction':
+                return await Communities.endAction(proposal.community_id);
+            case 'JoinAction':
+                return await Members.create(proposal.val_uuid, proposal.val_text);
+            case 'Funding':
+                return await Communities.funding(proposal.community_id, proposal.val_uuid, proposal.val_text);
+            case 'Payment':
+                return await Communities.pay(proposal.community_id, proposal.val_text);
+            default:
+                throw new Error("Invalid proposal type");
+        }
     }
 
 }

@@ -3,6 +3,7 @@
 CREATE TABLE IF NOT EXISTS Members (
     community_id uuid,
     user_id uuid,
+    status  int,
     seniority int,
     PRIMARY KEY ((community_id), user_id)
 );
@@ -36,9 +37,29 @@ class Members {
 
     static async create(user_id, community_id) {
         const astraClient = await createAstraClient();
-        // assuming `member` is an object with fields: community_id, user_id, seniority
-        const query = 'INSERT INTO Members (community_id, user_id, seniority) VALUES (?, ?, ?)';
-        const params = [community_id, user_id, 0];
+
+        // Check if user already exists in community
+        const checkQuery = 'SELECT * FROM Members WHERE community_id = ? AND user_id = ?';
+        const checkParams = [community_id, user_id];
+        const checkResult = await astraClient.execute(checkQuery, checkParams);
+
+        if(checkResult.rows.length > 0){
+            // User already exists, so update status to 1
+            const updateQuery = 'UPDATE Members SET status = ? WHERE community_id = ? AND user_id = ?';
+            const updateParams = [1, community_id, user_id];
+            await astraClient.execute(updateQuery, updateParams);
+        } else {
+            // User doesn't exist, so insert new record
+            const insertQuery = 'INSERT INTO Members (community_id, user_id, status, seniority) VALUES (?, ?, ?, ?)';
+            const insertParams = [community_id, user_id, 1, 0];
+            await astraClient.execute(insertQuery, insertParams);
+        }
+    }
+
+    static async throwOut(community_id, user_id) {
+        const astraClient = await createAstraClient();
+        const query = 'UPDATE Members SET status = ? WHERE community_id = ? AND user_id = ?';
+        const params = [2, community_id, user_id]; // 2 is status for thrown out
         await astraClient.execute(query, params);
     }
 
