@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS Proposals (
     proposal_status text,
     propsal_type
     proposal_support int,
-    pulse_id uuid
+    pulse_id uuid, 
+    age int
     PRIMARY KEY ((community_id), proposal_id)
 );
 */
@@ -19,10 +20,10 @@ const Communities = require('./communities.js');
 const createAstraClient = require('../path_to_your_file');
 
 
-const PROPOSAL_STATUS_ENUM = ['Draft', 'OutThere', 'Assigned', 'Canceled', 'OnTheAir', 'Accepted', 'Rejected'];
+const PROPOSAL_STATUS_ENUM = ['Draft', 'OutThere', 'Canceled', 'OnTheAir', 'Accepted', 'Rejected'];
 const PROPOSAL_TYPE_ENUM = ['Membership', 'ThrowOut', 'AddStatement', 'RemoveStatement','replaceStatement', 'ChangeVariable',
                             'AddAction', 'EndAction', 'JoinAction', 'Funding', 'Payment', 'payBack', 'Dividend'];
-const PROPOSAL_STATUS_LIFECYCLE = ['Draft', 'OutThere', 'Assigned', 'Accepted'];
+const PROPOSAL_STATUS_LIFECYCLE = ['Draft', 'OutThere', 'OnTheAir', 'Accepted'];
 
 class Proposals {
 
@@ -37,8 +38,8 @@ class Proposals {
         }
 
         const astraClient = await createAstraClient();
-        const query = 'INSERT INTO Proposals (community_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support) VALUES (?, ?, ?, ?, ?, ?)';
-        const params = [proposal.community_id, proposal.proposal_id, proposal.proposal_text, proposal.proposal_status, proposal.proposal_type, proposal.proposal_support];
+        const query = 'INSERT INTO Proposals (community_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support, age) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        const params = [proposal.community_id, proposal.proposal_id, proposal.proposal_text, proposal.proposal_status, proposal.proposal_type, proposal.proposal_support, 0];
         await astraClient.execute(query, params);
     }
 
@@ -77,13 +78,13 @@ class Proposals {
       return result.rows;
   }
 
-  static async findProposalsByPulse(pulseId) {
-    const astraClient = await createAstraClient();
-    const query = 'SELECT * FROM Proposals WHERE pulse_id = ?';
-    const params = [pulseId];
-    const result = await astraClient.execute(query, params);
-    return result.rows;
-}
+    static async findProposalsByPulse(pulseId) {
+        const astraClient = await createAstraClient();
+        const query = 'SELECT * FROM Proposals WHERE pulse_id = ?';
+        const params = [pulseId];
+        const result = await astraClient.execute(query, params);
+        return result.rows;
+    }
 
     static async findByType(proposalType) {
         const astraClient = await createAstraClient();
@@ -121,27 +122,6 @@ class Proposals {
         await astraClient.execute(query, params);
     }
 
-    static async AssignedToPulse(proposalId) {
-        const astraClient = await createAstraClient();
-
-        const proposal = await this.findById(proposalId);
-        if (!proposal || proposal.length === 0) {
-            throw new Error(`Proposal with id ${proposalId} not found`);
-        }
-
-
-        const activePulse = await Pulses.findActive();  
-        if (!activePulse || activePulse.length === 0) {
-            throw new Error(`No active pulse found`);
-        }
-
-        const query = 'UPDATE Proposals SET pulse_id = ? WHERE proposal_id = ?';
-        const params = [activePulse[0].pulse_id, proposalId];
-        await astraClient.execute(query, params);
-
-        await this.UpdateStatus(proposalId, true);
-    }
-
     static async countVotes(proposalId) {
         if (!proposalId) {
             return null;
@@ -162,64 +142,25 @@ class Proposals {
     }    
 
 
-    static async handleProposals(community_id) {
-        try {
-            const proposals = await this.AcceptedOrRejected(community_id);
-            
-            for (const [proposal_id, isAccepted] of Object.entries(proposals)) {
-                if (isAccepted) {
-                    await this.executeProposal(proposal_id);
-                    await this.UpdateStatus(proposal_id, true);  
-                } else {
-                    await this.UpdateStatus(proposal_id, false); 
-                }
-            }
-        } catch (error) {
-            console.error(`Error handling proposals: ${error.message}`);
-        }
-    }
-
-    static async AcceptedOrRejected(community_id) {
-        if (!community_id) {
+    static async countSupport(proposalId) {
+        if (!proposalId) {
             return null;
         }
     
         const astraClient = await createAstraClient();
+        const query = 'SELECT support, COUNT(*) as count FROM Support WHERE proposal_tpe = ? GROUP BY support';
+        const params = [proposalId];
     
-        // Fetch the community's active pulse
-        const pulseQuery = 'SELECT pulse_id FROM Pulse WHERE community_id = ? AND status = ?';
-        const activePulse = await astraClient.execute(pulseQuery, [community_id, 'Active']);
+        const result = await astraClient.execute(query, params);
     
-        if (!activePulse.rows.length) {
-            return null;  // Or some error message
-        }
+        let counts = {};
+        result.rows.forEach(row => {
+            counts[row.support] = row.count;
+        });
     
-        const pulse_id = activePulse.rows[0].pulse_id;
-    
-        // Fetch all the proposals that are linked to the pulse_id
-        const proposalQuery = 'SELECT proposal_id, proposal_type FROM Proposals WHERE community_id = ? AND pulse_id = ?';
-        const proposals = await astraClient.execute(proposalQuery, [community_id, pulse_id]);
-    
-        // Fetch the community's member_count
-        const communityQuery = 'SELECT members_count FROM Communities WHERE community_id = ?';
-        const community = await astraClient.execute(communityQuery, [community_id]);
-        const member_count = community.rows[0].members_count;
-    
-        const results = {};
-        for (let proposal of proposals.rows) {
-            const votes = await countVotes(proposal.proposal_id);
-    
-            // Fetch the variable_value where Variable.variable_type == Proposals.proposal_type
-            const variableQuery = 'SELECT variable_value FROM Variables WHERE community_id = ? AND variable_type = ?';
-            const variable = await astraClient.execute(variableQuery, [community_id, proposal.proposal_type]);
-            const variable_value = variable.rows[0].variable_value;
-    
-            // Check if the proposal is accepted or rejected
-            results[proposal.proposal_id] = (votes[1] / member_count * 100 > variable_value);
-        }
-    
-        return results;
-    }
+        return counts;
+    } 
+
 
     static async executeProposal(proposal_id) {
         const astraClient = await createAstraClient();

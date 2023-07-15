@@ -1,6 +1,7 @@
 const { transfer, getBalance } = require('../utils/transfer.js'); 
 const createAstraClient = require('../path_to_your_file');
-
+const Proposals = require('./proposals.js');
+const Pulses = require('./pulses.js')
 
 
 class Communities {
@@ -195,5 +196,149 @@ class Communities {
 
         return transferResult;
     }
+
+
+    static async updateSupport(community_id) {
+        if (!community_id) {
+            return null;
+        }
+    
+        const astraClient = await createAstraClient();
+
+        // Fetch all 'OutThere' proposals of the community
+        const outThereProposalsQuery = 'SELECT proposal_id FROM Proposals WHERE community_id = ? AND proposal_status = ?';
+        const outThereProposalsParams = [community_id, 'OutThere'];
+        const outThereProposals = await astraClient.execute(outThereProposalsQuery, outThereProposalsParams);
+
+        // For each 'OutThere' proposal, count the support and update the proposal_support field
+        for (let proposal of outThereProposals.rows) {
+            const proposalId = proposal.proposal_id;
+
+            const supportCountQuery = 'SELECT COUNT(*) as count FROM Support WHERE proposal_id = ? AND support = 1';
+            const supportCountParams = [proposalId];
+            const result = await astraClient.execute(supportCountQuery, supportCountParams);
+
+            const supportCount = result.rows[0].count;
+
+            const updateSupportQuery = 'UPDATE Proposals SET proposal_support = ? WHERE proposal_id = ?';
+            const updateSupportParams = [supportCount, proposalId];
+            await astraClient.execute(updateSupportQuery, updateSupportParams);
+        }
+    }
+
+    static async incrementAge(community_id) {
+        const astraClient = await createAstraClient();
+        
+        const query = 'UPDATE Proposals SET age = age + 1 WHERE community_id = ? AND proposal_status = ?';
+        const params = [community_id, 'OutThere'];
+        
+        await astraClient.execute(query, params);
+    }
+
+    static async handleOnTheAirProposals(community_id) {
+        try {
+
+            const pulseQuery = 'SELECT pulse_id FROM Pulse WHERE community_id = ? AND status = ?';
+            const activePulse = await astraClient.execute(pulseQuery, [community_id, 1]);
+
+            const proposals = await this.AcceptedOrRejected(community_id, activePulse);
+            
+            for (const [proposal_id, isAccepted] of Object.entries(proposals)) {
+                if (isAccepted) {
+                    await Proposals.executeProposal(proposal_id);
+                    await Proposals.UpdateStatus(proposal_id, true);  
+                } else {
+                    await Proposals.UpdateStatus(proposal_id, false); 
+                }
+            }
+        } catch (error) {
+            console.error(`Error handling proposals: ${error.message}`);
+        }
+    }
+
+    static async AcceptedOrRejected(community_id) {
+        if (!community_id) {
+            return null;
+        }
+    
+        const astraClient = await createAstraClient();
+    
+        pulse_id = pulseIdByStatus(community_id, 1)
+    
+        // Fetch all the proposals that are linked to the pulse_id
+        const proposalQuery = 'SELECT proposal_id, proposal_type FROM Proposals WHERE community_id = ? AND pulse_id = ?';
+        const proposals = await astraClient.execute(proposalQuery, [community_id, pulse_id]);
+    
+        // Fetch the community's member_count
+        const communityQuery = 'SELECT members_count FROM Communities WHERE community_id = ?';
+        const community = await astraClient.execute(communityQuery, [community_id]);
+        const member_count = community.rows[0].members_count;
+    
+        const results = {};
+        for (let proposal of proposals.rows) {
+            const votes = await countVotes(proposal.proposal_id);
+    
+            // Fetch the variable_value where Variable.variable_type == Proposals.proposal_type
+            const variableQuery = 'SELECT variable_value FROM Variables WHERE community_id = ? AND variable_type = ?';
+            const variable = await astraClient.execute(variableQuery, [community_id, proposal.proposal_type]);
+            const variable_value = variable.rows[0].variable_value;
+    
+            // Check if the proposal is accepted or rejected
+            results[proposal.proposal_id] = (votes[1] / member_count * 100 > variable_value);
+        }
+    
+        return results;
+    }
+
+    static async OutThere_2_OnTheAir(community_id) {
+        if (!community_id) {
+            return null;
+        }
+    
+        const astraClient = await createAstraClient();
+    
+        // Fetch the community's 'Next' pulse
+        const nextPulse = pulseIdByStatus(community_id, 0)
+        if (!nextPulse.rows.length) {
+            throw new Error('No next pulse found for this community.');
+        }
+    
+        // Fetch PulseSupport and MaxAge variable values
+        const variableQuery = 'SELECT variable_value FROM Variables WHERE community_id = ? AND variable_type IN (?, ?)';
+        const variables = await astraClient.execute(variableQuery, [community_id, 'PulseSupport', 'MaxAge']);
+        const pulseSupport = variables.rows.find(variable => variable.variable_type === 'PulseSupport').variable_value;
+        const maxAge = variables.rows.find(variable => variable.variable_type === 'MaxAge').variable_value;
+    
+        // Fetch the community's member_count
+        const communityQuery = 'SELECT members_count FROM Communities WHERE community_id = ?';
+        const community = await astraClient.execute(communityQuery, [community_id]);
+        const member_count = community.rows[0].members_count;
+    
+        // Update community support
+        await this.updateSupport(community_id);
+    
+        // Fetch community proposals of status 'OutThere' and update their status
+        const outThereProposalsQuery = 'SELECT * FROM Proposals WHERE community_id = ? AND proposal_status = ?';
+        const outThereProposals = await astraClient.execute(outThereProposalsQuery, [community_id, 'OutThere']);
+        for (let proposal of outThereProposals.rows) {
+            const proposalSupport = proposal.proposal_support;
+            if (proposalSupport / member_count * 100 > pulseSupport) {
+                await Proposals.UpdateStatus(proposal.proposal_id, true);
+            } else {
+                if (maxAge > proposal.age) {
+                    await Proposals.UpdateStatus(proposal.proposal_id, false);
+                }
+            }
+        }
+        Pulses.IncrementStatus(nextPulse)
+        Pulses.create(community_id)
+    }
+
+    static async pulse(community_id){
+        this.handleOnTheAirProposals(community_id)
+        this.OutThere_2_OnTheAir(community_id)
+    }
+
 }
+
 module.exports = Communities;

@@ -111,7 +111,7 @@ class DefaultVariables {
         },
         {
             "type" : "MaxAge",
-            "value" : 2,
+            "value" : 3,
             "desc" : "The Maximim 'OutThere' Proposal Age (in Pulses).",
         },
         {
@@ -120,7 +120,7 @@ class DefaultVariables {
             "desc" : "The Communitty Name.",
         },
         {
-            "type" : "restictPayments",
+            "type" : "RestictPayments",
             "value" : True,
             "desc" : "Only allow payments from a community that has no actions",
         }

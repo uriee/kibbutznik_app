@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS Proposals (
     pulse_id uuid,
     val_uuid uuid,
     val_text text,
+    age: int
     created_at timestamp
     updated_at timestamp
 );
@@ -104,7 +105,7 @@ CREATE TABLE IF NOT EXISTS Closeness_Records (
 CREATE TABLE IF NOT EXISTS Pulses (
     community_id uuid,
     pulse_id uuid PRIMARY KEY,
-    pulse_timestamp timestamp,
+    updated_at timestamp,
     pulse_status int, 
 );
 

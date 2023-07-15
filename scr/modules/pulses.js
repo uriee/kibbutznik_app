@@ -12,27 +12,34 @@ class Pulses {
         return result.rows;
     }
 
-    static async findByCommunityIdAndStatus(communityId, pulseStatus = null) {
+    static async pulseIdByStatus(communityId, pulseStatus) {
         const astraClient = await createAstraClient();
     
-        let query = 'SELECT * FROM Pulses WHERE community_id = ?';
-        let params = [communityId];
+        // Fetch the community's active pulse
+        const pulseQuery = 'SELECT pulse_id FROM Pulse WHERE community_id = ? AND status = ?';
+        const activePulse = await astraClient.execute(pulseQuery, [communityId, pulseStatus]);
     
-        if (pulseStatus) {
-            query += ' AND pulse_status = ?';
-            params.push(pulseStatus);
+        if (!activePulse.rows.length) {
+            return null;  // Or some error message
         }
     
-        const result = await astraClient.execute(query, params);
-        return result.rows;
+        const pulse_id = activePulse.rows[0].pulse_id;
+        return pulse_id
     }
 
     static async create(pulse) {
         const astraClient = await createAstraClient();
-        // assuming `pulse` is an object with fields: community_id, pulse_id
-        const query = 'INSERT INTO Pulses (community_id, pulse_id, updated_at, pulse_status) VALUES (?, ?, ?, ?)';
+
+        const checkQuery = 'SELECT * FROM Pulses WHERE community_id = ? AND pulse_status = 0';
+        const existingPulse = await astraClient.execute(checkQuery, [pulse.community_id]);
+
+        if (existingPulse.rows.length > 0) {
+            throw new Error('A pulse with status 0 already exists in this community.');
+        }
+
+        const insertQuery = 'INSERT INTO Pulses (community_id, pulse_id, updated_at, pulse_status) VALUES (?, ?, ?, ?)';
         const params = [pulse.community_id, pulse.pulse_id, new Date(), 0];
-        await astraClient.execute(query, params);
+        await astraClient.execute(insertQuery, params);
     }
 
     static async IncrementStatus(pulse_id) {
@@ -42,6 +49,7 @@ class Pulses {
         const params = [new Date(), pulse_id];
         await astraClient.execute(query, params);
     }
+    
     static async findActive() {
         const astraClient = await createAstraClient();
         const query = 'SELECT * FROM Pulses WHERE pulse_status = ?';
