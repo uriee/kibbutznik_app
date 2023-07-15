@@ -1,5 +1,5 @@
 // models/Pulses.js
-const createAstraClient = require('../path_to_your_file');
+import createAstraClient from '../utils/astraDB.js';
 
 const PULSE_STATUS_LIFECYCLE = ['Next', 'Active', 'Done'];
 
@@ -58,8 +58,5 @@ class Pulses {
         return result.rows;
     }
 
-    /*
-    When Pulse in run:
-    */
 }
 module.exports = Pulses;

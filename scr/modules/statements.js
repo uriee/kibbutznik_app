@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS Statements (
     statement_text text,
 );
 */
-const createAstraClient = require('../path_to_your_file');
+import createAstraClient from '../utils/astraDB.js';
 
 class Statements {
     

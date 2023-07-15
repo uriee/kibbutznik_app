@@ -1,5 +1,5 @@
 // models/Variables.js
-const createAstraClient = require('../path_to_your_file');
+import createAstraClient from '../utils/astraDB.js';
 
 class Variables {
     static async create(variable) {

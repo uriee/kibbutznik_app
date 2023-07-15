@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS Comments (
     PRIMARY KEY (comment_id)
 );
 */
-const createAstraClient = require('./path_to_your_astra_client');
+import createAstraClient from '../utils/astraDB.js';
 
 class Comments {
     static async addComment(commentId, parentCommentId, entityId, entityType, userId, commentText) {
@@ -37,4 +37,4 @@ class Comments {
     }
 }
 
-module.exports = Comments;
+export default Comments;

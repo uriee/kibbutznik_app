@@ -1,4 +1,4 @@
-const createAstraClient = require('./path_to_your_astra_client');
+import createAstraClient from '../utils/astraDB.js';
 
 class UserCloseness {
     static async insert(userId1, userId2, closenessScore) {

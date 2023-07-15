@@ -12,12 +12,13 @@ CREATE TABLE IF NOT EXISTS Proposals (
     PRIMARY KEY ((community_id), proposal_id)
 );
 */
-const Members = require('./members.js');
-const Statements = require('./statements.js');
-const Variables = require('./variables.js');
-const Communities = require('./communities.js');
+import createAstraClient from '../utils/astraDB.js';
+import { create as createMember, throwOut } from './members.js';
+import { create as createStatement, removeStatement, replaceStatement } from './statements.js';
+import { updateVariableValue } from './variables.js';
+import { create as createAction, endAction, funding, pay } from './communities.js';
 
-const createAstraClient = require('../path_to_your_file');
+import createAstraClient from '../path_to_your_file';
 
 
 const PROPOSAL_STATUS_ENUM = ['Draft', 'OutThere', 'Canceled', 'OnTheAir', 'Accepted', 'Rejected'];
@@ -173,27 +174,27 @@ class Proposals {
 
         switch(proposal.type) {
             case 'Membership':
-                return await Members.create(proposal.community_id, proposal.val_uuid);
+                return await createMemeber(proposal.community_id, proposal.val_uuid);
             case 'ThrowOut':
-                return await Members.throwOut(proposal.community_id, proposal.val_uuid);
+                return await throwOut(proposal.community_id, proposal.val_uuid);
             case 'AddStatement':
-                return await Statements.create(proposal.community_id,proposal.val_text);
+                return await createStatement(proposal.community_id,proposal.val_text);
             case 'RemoveStatement':
-                return await Statements.removeStatement(proposal.community_id, proposal.val_uuid);
+                return await removeStatement(proposal.community_id, proposal.val_uuid);
             case 'ReplaceStatement':
-                return await Statements.replaceStatement(proposal.community_id, proposal.val_uuid, proposal.val_text);
+                return await replaceStatement(proposal.community_id, proposal.val_uuid, proposal.val_text);
             case 'ChangeVariable':
-                return await Variables.updateVariableValue(proposal.community_id, proposal.val_uuid, proposal.val_text);
+                return await updateVariableValue(proposal.community_id, proposal.val_uuid, proposal.val_text);
             case 'AddAction':
-                return await Communities.create(proposal.val_text, proposal.community_id);
+                return await createAction(proposal.val_text, proposal.community_id);
             case 'EndAction':
-                return await Communities.endAction(proposal.community_id);
+                return await endAction(proposal.community_id);
             case 'JoinAction':
-                return await Members.create(proposal.val_uuid, proposal.val_text);
+                return await createMember(proposal.val_uuid, proposal.val_text);
             case 'Funding':
-                return await Communities.funding(proposal.community_id, proposal.val_uuid, proposal.val_text);
+                return await funding(proposal.community_id, proposal.val_uuid, proposal.val_text);
             case 'Payment':
-                return await Communities.pay(proposal.community_id, proposal.val_text);
+                return await pay(proposal.community_id, proposal.val_text);
             default:
                 throw new Error("Invalid proposal type");
         }
@@ -201,4 +202,4 @@ class Proposals {
 
 }
 
-module.exports = Proposals;
+export default Proposals;

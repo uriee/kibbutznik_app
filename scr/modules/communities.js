@@ -1,7 +1,8 @@
-const { transfer, getBalance } = require('../utils/transfer.js'); 
-const createAstraClient = require('../path_to_your_file');
-const Proposals = require('./proposals.js');
-const Pulses = require('./pulses.js')
+
+import { transfer, getBalance } from '../utils/transfer.js'; 
+import createAstraClient from '../utils/astraDB.js';
+import Proposals from './proposals.js';
+import { IncrementStatus, create as createPulse } from './pulses.js';
 
 
 class Communities {
@@ -251,6 +252,7 @@ class Communities {
                     await Proposals.UpdateStatus(proposal_id, false); 
                 }
             }
+            IncrementStatus(activePulse)
         } catch (error) {
             console.error(`Error handling proposals: ${error.message}`);
         }
@@ -330,8 +332,8 @@ class Communities {
                 }
             }
         }
-        Pulses.IncrementStatus(nextPulse)
-        Pulses.create(community_id)
+        IncrementStatus(nextPulse)
+        createPulse(community_id)
     }
 
     static async pulse(community_id){
@@ -341,4 +343,4 @@ class Communities {
 
 }
 
-module.exports = Communities;
+export default Communities;

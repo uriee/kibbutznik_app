@@ -1,7 +1,7 @@
 
 
 // models/DefaultVariables.js
-const createAstraClient = require('../path_to_your_file');
+import createAstraClient from '../utils/astraDB.js';
 
 class DefaultVariables {
     static async insert(variable_name, variable_type, variable_value) {

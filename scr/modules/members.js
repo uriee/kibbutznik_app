@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS Membership_Proposals (
 );
 */
 
-const createAstraClient = require('../path_to_your_file');
+import createAstraClient from '../utils/astraDB.js';
 
 class Members {
     static async find(userId, community_id) {
@@ -119,4 +119,4 @@ class Members {
         return result.rows;
     }
 }
-module.exports = Members;
+export default Members;

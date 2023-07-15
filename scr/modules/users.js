@@ -1,5 +1,5 @@
 // models/Users.js
-const createAstraClient = require('../path_to_your_file');
+import createAstraClient from '../utils/astraDB.js';
 
 class Users {
     static async findById(id) {

@@ -7,8 +7,7 @@ CREATE TABLE IF NOT EXISTS Support (
     PRIMARY KEY ((user_id), proposal_id)
 );
 */
-
-const createAstraClient = require('../path_to_your_file');
+import createAstraClient from '../utils/astraDB.js';
 
 class Support {
     static async create(support) {
