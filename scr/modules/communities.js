@@ -1,13 +1,17 @@
 
 import { transfer, getBalance } from '../utils/transfer.js'; 
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 import Proposals from './proposals.js';
+const express = require('express');
+const Users = require('../modules/users.js');
+const uuid = require('uuid');
+
 import { IncrementStatus, create as createPulse } from './pulses.js';
 
 
 class Communities {
     static async findById(communityId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Communities WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
@@ -15,7 +19,7 @@ class Communities {
     }
 
     static async create(parent_community_id, name) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
 
         // Generate a new UUID for the community_id
         const community_id = uuid.v4();
@@ -32,7 +36,7 @@ class Communities {
     }
 
     static async endAction(communityId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'UPDATE Communities SET status = 2 WHERE community_id = ?';
         const params = [ communityId ];
         await astraClient.execute(query, params);
@@ -52,7 +56,7 @@ class Communities {
     }
 
     static async getChildrenTree(communityId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Communities WHERE parent_community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
@@ -81,7 +85,7 @@ class Communities {
     }
 
     static async getVariables(communityId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Variables WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
@@ -89,7 +93,7 @@ class Communities {
     }
 
     static async getStatements(communityId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Statements WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
@@ -97,7 +101,7 @@ class Communities {
     }
 
     static async getMembers(communityId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Members WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
@@ -105,7 +109,7 @@ class Communities {
     }
 
     static async getProposals(communityId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Proposals WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
@@ -117,7 +121,7 @@ class Communities {
             return null;
         }
     
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
     
         // Update the name variable for the given community
         const setNameQuery = 'UPDATE Variables SET variable_value = ? WHERE community_id = ? AND variable_type = ?';
@@ -132,7 +136,7 @@ class Communities {
             return null;
         }
     
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
     
         // Fetch all the default variable values
         const defaultVariableValuesQuery = 'SELECT * FROM Default_Variable_Values';
@@ -149,7 +153,7 @@ class Communities {
     }
     
     static async funding(from_community_id, to_community_id, amount) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         
         // Fetch wallet addresses for both communities
         const from_query = 'SELECT wallet_address FROM Communities WHERE community_id = ?';
@@ -169,7 +173,7 @@ class Communities {
     }
 
     static async getCommunityBalance(community_id) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         
         // Fetch wallet address for the community
         const query = 'SELECT wallet_address FROM Communities WHERE community_id = ?';
@@ -184,7 +188,7 @@ class Communities {
     }
 
     static async pay(community_id, to_wallet_address, amount) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         
         // Fetch wallet private key for the community
         const query = 'SELECT wallet_address FROM Communities WHERE community_id = ?';
@@ -204,7 +208,7 @@ class Communities {
             return null;
         }
     
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
 
         // Fetch all 'OutThere' proposals of the community
         const outThereProposalsQuery = 'SELECT proposal_id FROM Proposals WHERE community_id = ? AND proposal_status = ?';
@@ -228,7 +232,7 @@ class Communities {
     }
 
     static async incrementAge(community_id) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         
         const query = 'UPDATE Proposals SET age = age + 1 WHERE community_id = ? AND proposal_status = ?';
         const params = [community_id, 'OutThere'];
@@ -263,7 +267,7 @@ class Communities {
             return null;
         }
     
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
     
         pulse_id = pulseIdByStatus(community_id, 1)
     
@@ -297,7 +301,7 @@ class Communities {
             return null;
         }
     
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
     
         // Fetch the community's 'Next' pulse
         const nextPulse = pulseIdByStatus(community_id, 0)

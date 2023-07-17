@@ -8,11 +8,11 @@ CREATE TABLE IF NOT EXISTS Votes (
     PRIMARY KEY ((user_id), proposal_id)
 );
 */
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 
 class Vote {
     static async create(vote) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         // assuming `vote` is an object with fields: user_id, community_id, proposal_id, vote
         const query = 'INSERT INTO Votes (user_id, community_id, proposal_id, vote) VALUES (?, ?, ?, ?)';
         const params = [vote.user_id, vote.community_id, vote.proposal_id, vote.vote];
@@ -20,7 +20,7 @@ class Vote {
     }
 
     static async delete(proposalId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'DELETE FROM Votes WHERE AND proposal_id = ?';
         const params = [proposalId];
         await astraClient.execute(query, params);
@@ -31,7 +31,7 @@ class Vote {
             return null;
         }
 
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         let query = 'SELECT * FROM Votes WHERE';
         let params = [];
         let conditions = [];

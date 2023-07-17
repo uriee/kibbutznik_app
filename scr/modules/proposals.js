@@ -12,13 +12,13 @@ CREATE TABLE IF NOT EXISTS Proposals (
     PRIMARY KEY ((community_id), proposal_id)
 );
 */
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 import { create as createMember, throwOut } from './members.js';
 import { create as createStatement, removeStatement, replaceStatement } from './statements.js';
 import { updateVariableValue } from './variables.js';
 import { create as createAction, endAction, funding, pay } from './communities.js';
 
-import createAstraClient from '../path_to_your_file';
+import createLocalClient from '../path_to_your_file';
 
 
 const PROPOSAL_STATUS_ENUM = ['Draft', 'OutThere', 'Canceled', 'OnTheAir', 'Accepted', 'Rejected'];
@@ -38,21 +38,21 @@ class Proposals {
             throw new Error(`Invalid proposal_type: ${proposal.proposal_type}`);
         }
 
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'INSERT INTO Proposals (community_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support, age) VALUES (?, ?, ?, ?, ?, ?, ?)';
         const params = [proposal.community_id, proposal.proposal_id, proposal.proposal_text, proposal.proposal_status, proposal.proposal_type, proposal.proposal_support, 0];
         await astraClient.execute(query, params);
     }
 
     static async delete(proposalId) {
-        const astraClient = await createAstraClient();
-        const query = 'DELETE FROM Proposals WHERE proposal_id = ?';
+        const astraClient = await createLocalClient();
+        const query = 'DELETE FROM Proposals WHERE proposal_id = ? and proposal_status = "Draft"';
         const params = [proposalId];
         await astraClient.execute(query, params);
     }
 
     static async findById(proposalId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Proposals WHERE proposal_id = ?';
         const params = [proposalId];
         const result = await astraClient.execute(query, params);
@@ -60,7 +60,7 @@ class Proposals {
     }
 
     static async find(communityId, proposalStatus = null, proposalType = null) {
-      const astraClient = await createAstraClient();
+      const astraClient = await createLocalClient();
   
       let query = 'SELECT * FROM Proposals WHERE community_id = ?';
       let params = [communityId];
@@ -80,7 +80,7 @@ class Proposals {
   }
 
     static async findProposalsByPulse(pulseId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Proposals WHERE pulse_id = ?';
         const params = [pulseId];
         const result = await astraClient.execute(query, params);
@@ -88,7 +88,7 @@ class Proposals {
     }
 
     static async findByType(proposalType) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Proposals WHERE proposal_type = ?';
         const params = [proposalType];
         const result = await astraClient.execute(query, params);
@@ -97,7 +97,7 @@ class Proposals {
 
 
     static async UpdateStatus(proposalId, direction) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         
     
         const proposal = await this.findById(proposalId);
@@ -128,7 +128,7 @@ class Proposals {
             return null;
         }
     
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT vote, COUNT(*) as count FROM Votes WHERE proposal_id = ? GROUP BY vote';
         const params = [proposalId];
     
@@ -148,7 +148,7 @@ class Proposals {
             return null;
         }
     
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT support, COUNT(*) as count FROM Support WHERE proposal_tpe = ? GROUP BY support';
         const params = [proposalId];
     
@@ -164,7 +164,7 @@ class Proposals {
 
 
     static async executeProposal(proposal_id) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
 
         // Fetch the proposal
         const query = 'SELECT * FROM Proposals WHERE proposal_id = ?';

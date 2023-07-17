@@ -61,11 +61,22 @@ Kibbutznik App
 
 
 TODO: 
-Vote -> passorfail
-Vote -> pass -> execute proposal
-Vote -> fail -> incrementStatus(_,false)
-support+ -> assign to pulse
-support- -> Garbage collector
-pulse: 
-    get on the air
-    proposal -> is pass
+
+map REST:
+post:
+    login
+    membership request
+    add proposal
+    support
+    pulse support
+    vote
+    comment
+
+get:
+    community by id/ communities
+    member/ members
+    proposal/ proposals / by pulse / by status
+    statement
+    variable
+
+    

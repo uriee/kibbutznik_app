@@ -1,6 +1,6 @@
 const { StargateClient } = require("@stargate-oss/stargate-grpc-node-client");
 
-async function createAstraClient() {
+async function createLocalClient() {
 
     const astra_uri = "{astra-base-url}-{astra-region}.apps.astra.datastax.com:443";
     const bearer_token = "AstraCS:xxxxxxx";
@@ -23,14 +23,14 @@ async function createAstraClient() {
     return promisifiedClient = promisifyStargateClient(stargateClient);
 }
 
-module.exports = createAstraClient;
+module.exports = createLocalClient;
 
 /*
 
-const createAstraClient = require("./path_to_your_file");
+const createLocalClient = require("./path_to_your_file");
 
 async function main() {
-    const astraClient = await createAstraClient();
+    const astraClient = await createLocalClient();
 
     // Now you can use astraClient to make requests to your Astra DB
 }

@@ -1,25 +1,25 @@
 
 
 // models/DefaultVariables.js
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 
 class DefaultVariables {
     static async insert(variable_name, variable_type, variable_value) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'INSERT INTO DefaultVariables (variable_id, variable_name, variable_type, variable_default_value, variable_desc,) VALUES (uuid(), ?, ?, ?, ?)';
         const params = [ variable_name, variable_type, variable_value, variable_desc ];
         await astraClient.execute(query, params);
     }
 
     static async updateDefaultValue(variable_id, variable_value) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'UPDATE DefaultVariables SET variable_default_value = ? WHERE variable_id = ?';
         const params = [ variable_value, variable_id ];
         await astraClient.execute(query, params);
     }
 
     static async getByType(variable_type) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM DefaultVariables WHERE variable_type = ?';
         const params = [ variable_type ];
         const result = await astraClient.execute(query, params);

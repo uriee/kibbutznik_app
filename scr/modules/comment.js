@@ -11,18 +11,18 @@ CREATE TABLE IF NOT EXISTS Comments (
     PRIMARY KEY (comment_id)
 );
 */
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 
 class Comments {
     static async addComment(commentId, parentCommentId, entityId, entityType, userId, commentText) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'INSERT INTO Comments (comment_id, parent_comment_id, entity_id, entity_type, user_id, comment_text, comment_timestamp, score) VALUES (?, ?, ?, ?, ?, ?, toTimeStamp(now()), ?)';
         const params = [commentId, parentCommentId, entityId, entityType, userId, commentText, 0]; // Initialize score as 0
         await astraClient.execute(query, params);
     }
 
     static async getComments(entityId, entityType) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Comments WHERE entity_id = ? AND entity_type = ? ORDER BY score DESC';
         const params = [entityId, entityType];
         const result = await astraClient.execute(query, params);
@@ -30,9 +30,24 @@ class Comments {
     }
 
     static async updateScore(commentId, newScore) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'UPDATE Comments SET score = ? WHERE comment_id = ?';
         const params = [newScore, commentId];
+        await astraClient.execute(query, params);
+    }
+
+
+    static async incrementScore(commentId) {
+        const astraClient = await createLocalClient();
+        const query = 'UPDATE Comments SET score = score + 1 WHERE comment_id = ?';
+        const params = [commentId];
+        await astraClient.execute(query, params);
+    }
+
+    static async decrementScore(commentId) {
+        const astraClient = await createLocalClient();
+        const query = 'UPDATE Comments SET score = score - 1 WHERE comment_id = ?';
+        const params = [commentId];
         await astraClient.execute(query, params);
     }
 }

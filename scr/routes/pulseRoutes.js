@@ -1,21 +1,29 @@
 const express = require('express');
 const router = express.Router();
-const pulseController = require('../controllers/pulseController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const Pulses = require('./pulses');
 
-// Get all pulses
-router.get('/', authMiddleware.protect, pulseController.getAllPulses);
+// Get pulse id by status
+router.get('/pulses/:communityId/:pulseStatus', async (req, res) => {
+    try {
+        const communityId = req.params.communityId;
+        const pulseStatus = req.params.pulseStatus;
+        const pulseId = await Pulses.pulseIdByStatus(communityId, pulseStatus);
+        res.status(200).json({ pulse_id: pulseId });
+    } catch (error) {
+        console.error('Failed to get pulse id:', error);
+        res.status(500).json({ message: 'Failed to get pulse id' });
+    }
+});
 
-// Get a single pulse by id
-router.get('/:id', authMiddleware.protect, pulseController.getPulse);
-
-// Create a new pulse
-router.post('/', authMiddleware.protect, authMiddleware.restrictTo('admin'), pulseController.createPulse);
-
-// Update a pulse
-router.patch('/:id', authMiddleware.protect, authMiddleware.restrictTo('admin'), pulseController.updatePulse);
-
-// Delete a pulse
-router.delete('/:id', authMiddleware.protect, authMiddleware.restrictTo('admin'), pulseController.deletePulse);
+// Find active pulses
+router.get('/pulses/active', async (req, res) => {
+    try {
+        const activePulses = await Pulses.findActive();
+        res.status(200).json({ active_pulses: activePulses });
+    } catch (error) {
+        console.error('Failed to get active pulses:', error);
+        res.status(500).json({ message: 'Failed to get active pulses' });
+    }
+});
 
 module.exports = router;

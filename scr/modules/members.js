@@ -16,11 +16,11 @@ CREATE TABLE IF NOT EXISTS Membership_Proposals (
 );
 */
 
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 
 class Members {
     static async find(userId, community_id) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         let query, params;
 
         if(community_id) {
@@ -36,7 +36,7 @@ class Members {
     }
 
     static async create(user_id, community_id) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
 
         // Check if user already exists in community
         const checkQuery = 'SELECT * FROM Members WHERE community_id = ? AND user_id = ?';
@@ -57,14 +57,14 @@ class Members {
     }
 
     static async throwOut(community_id, user_id) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'UPDATE Members SET status = ? WHERE community_id = ? AND user_id = ?';
         const params = [2, community_id, user_id]; // 2 is status for thrown out
         await astraClient.execute(query, params);
     }
 
     static async fetchMembershipProposal(userId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const proposalQuery = 'SELECT proposal_id FROM Membership_Proposals WHERE user_id = ?';
         const proposalParams = [userId];
         const proposalResult = await astraClient.execute(proposalQuery, proposalParams);
@@ -80,7 +80,7 @@ class Members {
     }
 
     static async getSupportedProposals(userId, communityId = null) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         let query = 'SELECT * FROM Support WHERE user_id = ?';
         let params = [userId];
         if(communityId) {
@@ -92,7 +92,7 @@ class Members {
     }
 
     static async getVotedProposals(userId, communityId = null) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         let query = 'SELECT * FROM Votes WHERE user_id = ?';
         let params = [userId];
         if(communityId) {
@@ -104,7 +104,7 @@ class Members {
     }
 
     static async seniorityGTE(community_id, seniority) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Members WHERE community_id = ? AND seniority >= ?';
         const params = [community_id, seniority];
         const result = await astraClient.execute(query, params);
@@ -112,7 +112,7 @@ class Members {
     }
 
     static async seniorityLTE(community_id, seniority) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Members WHERE community_id = ? AND seniority <= ?';
         const params = [community_id, seniority];
         const result = await astraClient.execute(query, params);

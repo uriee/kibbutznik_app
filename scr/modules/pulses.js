@@ -1,11 +1,11 @@
 // models/Pulses.js
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 
 const PULSE_STATUS_LIFECYCLE = ['Next', 'Active', 'Done'];
 
 class Pulses {
     static async findByCommunityId(communityId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Pulses WHERE community_id = ?';
         const params = [communityId];
         const result = await astraClient.execute(query, params);
@@ -13,7 +13,7 @@ class Pulses {
     }
 
     static async pulseIdByStatus(communityId, pulseStatus) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
     
         // Fetch the community's active pulse
         const pulseQuery = 'SELECT pulse_id FROM Pulse WHERE community_id = ? AND status = ?';
@@ -28,7 +28,7 @@ class Pulses {
     }
 
     static async create(pulse) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
 
         const checkQuery = 'SELECT * FROM Pulses WHERE community_id = ? AND pulse_status = 0';
         const existingPulse = await astraClient.execute(checkQuery, [pulse.community_id]);
@@ -43,7 +43,7 @@ class Pulses {
     }
 
     static async IncrementStatus(pulse_id) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         // assuming pulse_status gets incremented by 1 and updated_at gets the current timestamp
         const query = 'UPDATE Pulses SET pulse_status = pulse_status + 1, updated_at = ? WHERE pulse_id = ?';
         const params = [new Date(), pulse_id];
@@ -51,7 +51,7 @@ class Pulses {
     }
     
     static async findActive() {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Pulses WHERE pulse_status = ?';
         const params = [1];
         const result = await astraClient.execute(query, params);

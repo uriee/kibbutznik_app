@@ -5,20 +5,20 @@ CREATE TABLE IF NOT EXISTS Pulse_Support (
     PRIMARY KEY ((pulse_id), user_id)
 );
 */
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 import Pulse from './pulses.js';
 
 class PulseSupport {
     static async create(community_id, user_id) {
         const pulse_id = Pulse.pulseIdByStatus(community_id, 1)
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'INSERT INTO Pulse_Support (user_id, pulse_id) VALUES (?, ?)';
         const params = [user_id, pulse_id];
         await astraClient.execute(query, params);
     }
 
     static async delete(user_id, proposalId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const pulse_id = Pulse.pulseIdByStatus(community_id, 1)
         const query = 'DELETE FROM Pulse_Support WHERE user_id = ? AND pulse_id = ?';
         const params = [user_id, pulse_id];
@@ -30,7 +30,7 @@ class PulseSupport {
             return null;
         }
 
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         let query = 'SELECT * FROM Pulse_Support WHERE';
         let params = [];
         let conditions = [];
@@ -55,7 +55,7 @@ class PulseSupport {
             return null;
         }
     
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const pulse_id = Pulse.pulseIdByStatus(community_id, 1)
         const query = 'SELECT  COUNT(*) as count FROM Support WHERE pulse_id = ?';
         const params = [pulse_id];

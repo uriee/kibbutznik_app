@@ -7,58 +7,62 @@ CREATE TABLE IF NOT EXISTS Statements (
 
 CREATE TABLE IF NOT EXISTS Variables (
     community_id uuid,
-    variable_id uuid, PRIMARY KEY
+    variable_id uuid,
     variable_type text,
     variable_value text,
-    variable_desc text
+    variable_desc text,
+    PRIMARY KEY (community_id, variable_id)
 );
 
 CREATE TABLE IF NOT EXISTS Default_Variable_Values (
-    variable_id uuid, PRIMARY KEY
     variable_type text,
     variable_default_value text,
     variable_desc text,
+    PRIMARY KEY(variable_type)
 );
 
 
 CREATE TABLE IF NOT EXISTS Communities (
-    community_id uuid PRIMARY KEY,
-    parent_community_id uuid
-    memebers_count int, 
-    wallet_address: text
-    account_balance double
-    status int
+    community_id uuid,
+    parent_community_id uuid,
+    members_count int, 
+    wallet_address text,
+    account_balance double,
+    status int,
+    PRIMARY KEY(community_id)
 );
 
 CREATE TABLE IF NOT EXISTS Members (
     community_id uuid,
     user_id uuid,
-    status int
+    status int,
     seniority int,
     PRIMARY KEY ((community_id), user_id)
 );
 
 CREATE TABLE IF NOT EXISTS Users (
-    user_id uuid PRIMARY KEY, 
+    user_id uuid, 
     user_name text,
     password text,
     about text,
-    wallet_address text
+    wallet_address text,
+    PRIMARY KEY(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS Proposals (
     community_id uuid,
-    proposal_id uuid PRIMARY KEY,
+    proposal_id uuid,
     proposal_text text,
     proposal_status text,
-    propsal_type
+    propsal_type text,
     proposal_support int,
     pulse_id uuid,
     val_uuid uuid,
     val_text text,
-    age: int
-    created_at timestamp
-    updated_at timestamp
+    age int,
+    created_at timestamp,
+    updated_at timestamp,
+    PRIMARY KEY (community_id, proposal_id)
 );
 
 
@@ -66,31 +70,33 @@ CREATE TABLE IF NOT EXISTS Support (
     user_id uuid,
     proposal_id uuid,
     support int,
-    PRIMARY KEY ((user_id), proposal_id)
+    PRIMARY KEY (user_id, proposal_id)
 );
 
 
 CREATE TABLE IF NOT EXISTS Membership_Payment (
-    community_id uuid PRIMARY KEY,
+    payment_id uuid,
+    community_id uuid,
     user_id uuid, 
-    ammount double
+    ammount double,
+    PRIMARY KEY(payment_id, user_id, community_id)
 );
 
 CREATE TABLE IF NOT EXISTS Payment (
-    payment_id uuid PRIMARY KEY,
-    community_id uuid
-    pay_to_address text
-    about text
+    payment_id uuid ,
+    community_id uuid,
+    pay_to_address text,
+    about text,
     ammount double, 
+    PRIMARY KEY(payment_id, community_id)
 );
-
 
 
 CREATE TABLE IF NOT EXISTS Votes (
     user_id uuid,
     proposal_id uuid,
     vote int,
-    PRIMARY KEY ((user_id), proposal_id)
+    PRIMARY KEY (user_id, proposal_id)
 );
 
 
@@ -99,31 +105,33 @@ CREATE TABLE IF NOT EXISTS Closeness_Records (
     user_id2 uuid,
     closeness_score double,
     last_calculation timestamp,
-    PRIMARY KEY ((user_id1), user_id2)
+    PRIMARY KEY (user_id1, user_id2)
 );
 
 CREATE TABLE IF NOT EXISTS Pulses (
     community_id uuid,
-    pulse_id uuid PRIMARY KEY,
+    pulse_id uuid,
     updated_at timestamp,
     pulse_status int, 
+    PRIMARY KEY (community_id, pulse_id)
 );
 
 CREATE TABLE IF NOT EXISTS Pulse_Support (
     pulse_id uuid,
     user_id uuid,
-    PRIMARY KEY ((pulse_id), user_id)
+    PRIMARY KEY (pulse_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS Comments (
-    comment_id uuid PRIMARY KEY,
+    comment_id uuid,
     parent_comment_id uuid,
     entity_id uuid,
     entity_type text,
     user_id uuid,
     comment_text text,
     comment_timestamp timestamp,
-    score int
+    score int,
+    PRIMARY KEY(entity_id, comment_id)
 );
 
 CREATE INDEX IF NOT EXISTS ON communities(community_name);

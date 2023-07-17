@@ -1,22 +1,22 @@
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 
 class UserCloseness {
     static async insert(userId1, userId2, closenessScore) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'INSERT INTO Closeness_Records (user_id1, user_id2, closeness_score, last_calculation) VALUES (?, ?, ?, toTimeStamp(now()))';
         const params = [userId1, userId2, -1];
         await astraClient.execute(query, params);
     }
 
     static async delete(userId1, userId2) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'DELETE FROM Closeness_Records WHERE user_id1 = ? AND user_id2 = ?';
         const params = [userId1, userId2];
         await astraClient.execute(query, params);
     }
 
     static async find(userId1, userId2) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Closeness_Records WHERE user_id1 = ? AND user_id2 = ?';
         const params = [userId1, userId2];
         const result = await astraClient.execute(query, params);
@@ -24,7 +24,7 @@ class UserCloseness {
     }
 
     static async calc(userId1, userId2) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
 
         // Fetch the current closeness record
         const closenessRecord = await this.find(userId1, userId2);

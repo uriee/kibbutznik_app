@@ -7,19 +7,19 @@ CREATE TABLE IF NOT EXISTS Support (
     PRIMARY KEY ((user_id), proposal_id)
 );
 */
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 
 class Support {
-    static async create(support) {
-        const astraClient = await createAstraClient();
+    static async create(user_id, proposal_id, support) {
+        const astraClient = await createLocalClient();
         // assuming `support` is an object with fields: user_id, proposal_id, support
         const query = 'INSERT INTO Support (user_id, proposal_id, support) VALUES (?, ?, ?)';
-        const params = [support.user_id, support.proposal_id, support.support];
+        const params = [user_id, proposal_id, support];
         await astraClient.execute(query, params);
     }
 
     static async delete(userId, proposalId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'DELETE FROM Support WHERE user_id = ? AND proposal_id = ?';
         const params = [userId, proposalId];
         await astraClient.execute(query, params);
@@ -30,7 +30,7 @@ class Support {
             return null;
         }
 
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         let query = 'SELECT * FROM Support WHERE';
         let params = [];
         let conditions = [];
@@ -55,7 +55,7 @@ class Support {
             return null;
         }
     
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT support, COUNT(*) as count FROM Support WHERE proposal_id = ? GROUP BY support';
         const params = [proposalId];
     

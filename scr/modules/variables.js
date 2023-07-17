@@ -1,9 +1,9 @@
 // models/Variables.js
-import createAstraClient from '../utils/astraDB.js';
+import createLocalClient from '../utils/astraDB.js';
 
 class Variables {
     static async create(variable) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         // assuming `variable` is an object with fields: community_id, variable_id, variable_name, variable_value
         const query = 'INSERT INTO Variables (community_id, variable_id, variable_name, variable_value, variable_desc,) VALUES (?, ?, ?, ?)';
         const params = [variable.community_id, variable.variable_id, variable.variable_name, variable.variable_value, variable.variable_desc];
@@ -12,7 +12,7 @@ class Variables {
 
 
     static async findById(variableId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Variables WHERE variable_id = ?';
         const params = [variableId];
         const result = await astraClient.execute(query, params);
@@ -20,7 +20,7 @@ class Variables {
     }
 
     static async getVariableValue(communityId, variableType) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT variable_value FROM Variables WHERE community_id = ? AND variable_type = ?';
         const params = [communityId, variableType];
 
@@ -33,7 +33,7 @@ class Variables {
     }
 
     static async updateVariableValue(communityId, variableType, newValue) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'UPDATE Variables SET variable_value = ? WHERE community_id = ? AND variable_type = ?';
         const params = [newValue, communityId, variableType];
 
@@ -42,7 +42,7 @@ class Variables {
 
 
     static async initializeCommunityVariables(communityId) {
-        const astraClient = await createAstraClient();
+        const astraClient = await createLocalClient();
         const query = 'SELECT * FROM Default_Variable_Values';
         const result = await astraClient.execute(query);
         const defaultVariables = result.rows;
