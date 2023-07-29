@@ -12,13 +12,11 @@ CREATE TABLE IF NOT EXISTS Proposals (
     PRIMARY KEY ((community_id), proposal_id)
 );
 */
-import createLocalClient from '../utils/astraDB.js';
-import { create as createMember, throwOut } from './members.js';
-import { create as createStatement, removeStatement, replaceStatement } from './statements.js';
-import { updateVariableValue } from './variables.js';
-import { create as createAction, endAction, funding, pay } from './communities.js';
-
-import createLocalClient from '../path_to_your_file';
+const DBClient = require('../utils/localDB.js');
+const { create: createMember, throwOut } = require('./members.js');
+const { create: createStatement, removeStatement, replaceStatement } = require('./statements.js');
+const { updateVariableValue } = require('./variables.js');
+const { create: createAction, endAction} = require('./communities.js');
 
 
 const PROPOSAL_STATUS_ENUM = ['Draft', 'OutThere', 'Canceled', 'OnTheAir', 'Accepted', 'Rejected'];
@@ -38,29 +36,29 @@ class Proposals {
             throw new Error(`Invalid proposal_type: ${proposal.proposal_type}`);
         }
 
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'INSERT INTO Proposals (community_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support, age) VALUES (?, ?, ?, ?, ?, ?, ?)';
         const params = [proposal.community_id, proposal.proposal_id, proposal.proposal_text, proposal.proposal_status, proposal.proposal_type, proposal.proposal_support, 0];
-        await astraClient.execute(query, params);
+        await db.execute(query, params, { hints : ['uuid', 'uuid', 'text', 'text', 'text', 'int', 'int']});
     }
 
     static async delete(proposalId) {
-        const astraClient = await createLocalClient();
+        const db = DBClient.getInstance();
         const query = 'DELETE FROM Proposals WHERE proposal_id = ? and proposal_status = "Draft"';
         const params = [proposalId];
-        await astraClient.execute(query, params);
+        await db.execute(query, params);
     }
 
     static async findById(proposalId) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'SELECT * FROM Proposals WHERE proposal_id = ?';
         const params = [proposalId];
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         return result.rows;
     }
 
     static async find(communityId, proposalStatus = null, proposalType = null) {
-      const astraClient = await createLocalClient();
+     const db = DBClient.getInstance();
   
       let query = 'SELECT * FROM Proposals WHERE community_id = ?';
       let params = [communityId];
@@ -75,29 +73,29 @@ class Proposals {
           params.push(proposalType);
       }
   
-      const result = await astraClient.execute(query, params);
+      const result = await db.execute(query, params);
       return result.rows;
   }
 
     static async findProposalsByPulse(pulseId) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'SELECT * FROM Proposals WHERE pulse_id = ?';
         const params = [pulseId];
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         return result.rows;
     }
 
     static async findByType(proposalType) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'SELECT * FROM Proposals WHERE proposal_type = ?';
         const params = [proposalType];
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         return result.rows;
     }
 
 
     static async UpdateStatus(proposalId, direction) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         
     
         const proposal = await this.findById(proposalId);
@@ -120,7 +118,7 @@ class Proposals {
 
         const query = 'UPDATE Proposals SET proposal_status = ? WHERE proposal_id = ?';
         const params = [newStatus, proposalId];
-        await astraClient.execute(query, params);
+        await db.execute(query, params);
     }
 
     static async countVotes(proposalId) {
@@ -128,11 +126,11 @@ class Proposals {
             return null;
         }
     
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'SELECT vote, COUNT(*) as count FROM Votes WHERE proposal_id = ? GROUP BY vote';
         const params = [proposalId];
     
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
     
         let counts = {};
         result.rows.forEach(row => {
@@ -148,11 +146,11 @@ class Proposals {
             return null;
         }
     
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'SELECT support, COUNT(*) as count FROM Support WHERE proposal_tpe = ? GROUP BY support';
         const params = [proposalId];
     
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
     
         let counts = {};
         result.rows.forEach(row => {
@@ -164,12 +162,12 @@ class Proposals {
 
 
     static async executeProposal(proposal_id) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
 
         // Fetch the proposal
         const query = 'SELECT * FROM Proposals WHERE proposal_id = ?';
         const params = [proposal_id];
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         const proposal = result.rows[0];
 
         switch(proposal.type) {
@@ -191,10 +189,12 @@ class Proposals {
                 return await endAction(proposal.community_id);
             case 'JoinAction':
                 return await createMember(proposal.val_uuid, proposal.val_text);
+                /*
             case 'Funding':
                 return await funding(proposal.community_id, proposal.val_uuid, proposal.val_text);
             case 'Payment':
                 return await pay(proposal.community_id, proposal.val_text);
+                */
             default:
                 throw new Error("Invalid proposal type");
         }
@@ -202,4 +202,4 @@ class Proposals {
 
 }
 
-export default Proposals;
+module.exports = Proposals;

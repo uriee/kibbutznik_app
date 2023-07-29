@@ -4,7 +4,7 @@ const uuid = require('uuid');
 const router = express.Router();
 
 
-router.post('/users', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { user_name, password, about, wallet_address } = req.body;  // Get the data from the request's body
         const newUser = {
@@ -24,7 +24,7 @@ router.post('/users', async (req, res) => {
     }
 });
 
-router.get('/users', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const users = await Users.findAll();
         res.status(200).json(users);
@@ -34,7 +34,7 @@ router.get('/users', async (req, res) => {
     }
 });
 
-router.get('/users/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const user = await Users.findById(id);

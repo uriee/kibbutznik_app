@@ -30,9 +30,9 @@ module.exports = createLocalClient;
 const createLocalClient = require("./path_to_your_file");
 
 async function main() {
-    const astraClient = await createLocalClient();
+    const DBClient = await createLocalClient();
 
-    // Now you can use astraClient to make requests to your Astra DB
+    // Now you can use DBClient to make requests to your Astra DB
 }
 
 main().catch(console.error);

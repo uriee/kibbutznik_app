@@ -8,22 +8,22 @@ CREATE TABLE IF NOT EXISTS Votes (
     PRIMARY KEY ((user_id), proposal_id)
 );
 */
-import createLocalClient from '../utils/astraDB.js';
+const DBClient = require('../utils/localDB.js');
 
 class Vote {
-    static async create(vote) {
-        const astraClient = await createLocalClient();
+    static async create(user_id,community_id, proposal_id, vote) {
+       const db = DBClient.getInstance();
         // assuming `vote` is an object with fields: user_id, community_id, proposal_id, vote
         const query = 'INSERT INTO Votes (user_id, community_id, proposal_id, vote) VALUES (?, ?, ?, ?)';
-        const params = [vote.user_id, vote.community_id, vote.proposal_id, vote.vote];
-        await astraClient.execute(query, params);
+        const params = [user_id, community_id, proposal_id, vote];
+        await db.execute(query, params, { hints : ['uuid', 'uuid', 'uuid', 'int']});
     }
 
     static async delete(proposalId) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'DELETE FROM Votes WHERE AND proposal_id = ?';
         const params = [proposalId];
-        await astraClient.execute(query, params);
+        await db.execute(query, params);
     }
 
     static async getVotes(userId, communityId, proposalId) {
@@ -31,7 +31,7 @@ class Vote {
             return null;
         }
 
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         let query = 'SELECT * FROM Votes WHERE';
         let params = [];
         let conditions = [];
@@ -51,7 +51,7 @@ class Vote {
 
         query += ' ' + conditions.join(' AND ');
 
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         return result.rows;
     }
     

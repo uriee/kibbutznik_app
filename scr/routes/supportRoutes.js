@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Support = require('../modules/support');
+const Support = require('../modules/supports');
 
 // Create support
 router.post('/supports', async (req, res) => {
@@ -15,7 +15,7 @@ router.post('/supports', async (req, res) => {
 });
 
 // Delete support
-router.delete('/supports/:userId/:proposalId', async (req, res) => {
+router.delete('/:userId/:proposalId', async (req, res) => {
     try {
         const userId = req.params.userId;
         const proposalId = req.params.proposalId;
@@ -28,7 +28,7 @@ router.delete('/supports/:userId/:proposalId', async (req, res) => {
 });
 
 // Find support by proposal ID and user ID
-router.get('/supports/:proposalId/:userId', async (req, res) => {
+router.get('/:proposalId/:userId', async (req, res) => {
     try {
         const proposalId = req.params.proposalId;
         const userId = req.params.userId;
@@ -41,7 +41,7 @@ router.get('/supports/:proposalId/:userId', async (req, res) => {
 });
 
 // Count support
-router.get('/supports/count/:proposalId', async (req, res) => {
+router.get('/count/:proposalId', async (req, res) => {
     try {
         const proposalId = req.params.proposalId;
         const counts = await Support.countSupport(proposalId);

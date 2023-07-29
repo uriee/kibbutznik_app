@@ -23,7 +23,7 @@ async function transfer(fromPrivateKey, toAddress, amount) {
 
 const privateKey = 'YourPrivateKey';
 const receiverAddress = 'ReceiverAddress';
-const abi = [ ... ]; // USDT contract ABI
+const abi = [ 'usdcontract' ]; // USDT contract ABI
 
 getBalance(receiverAddress)
     .then(balance => console.log(`Balance: ${balance} USDT`))

@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Pulses = require('./pulses');
+const Pulses = require('../modules/pulses');
 
 // Get pulse id by status
-router.get('/pulses/:communityId/:pulseStatus', async (req, res) => {
+router.get('/:communityId/:pulseStatus', async (req, res) => {
     try {
         const communityId = req.params.communityId;
         const pulseStatus = req.params.pulseStatus;
@@ -16,7 +16,7 @@ router.get('/pulses/:communityId/:pulseStatus', async (req, res) => {
 });
 
 // Find active pulses
-router.get('/pulses/active', async (req, res) => {
+router.get('/active', async (req, res) => {
     try {
         const activePulses = await Pulses.findActive();
         res.status(200).json({ active_pulses: activePulses });

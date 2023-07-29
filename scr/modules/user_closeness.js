@@ -1,30 +1,30 @@
-import createLocalClient from '../utils/astraDB.js';
+const DBClient = require('../utils/localDB.js');
 
 class UserCloseness {
     static async insert(userId1, userId2, closenessScore) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'INSERT INTO Closeness_Records (user_id1, user_id2, closeness_score, last_calculation) VALUES (?, ?, ?, toTimeStamp(now()))';
         const params = [userId1, userId2, -1];
-        await astraClient.execute(query, params);
+        await db.execute(query, params, { hints : ['uuid', 'uuid', 'int', 'timestamp']});
     }
 
     static async delete(userId1, userId2) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'DELETE FROM Closeness_Records WHERE user_id1 = ? AND user_id2 = ?';
         const params = [userId1, userId2];
-        await astraClient.execute(query, params);
+        await db.execute(query, params);
     }
 
     static async find(userId1, userId2) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'SELECT * FROM Closeness_Records WHERE user_id1 = ? AND user_id2 = ?';
         const params = [userId1, userId2];
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         return result.rows;
     }
 
     static async calc(userId1, userId2) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
 
         // Fetch the current closeness record
         const closenessRecord = await this.find(userId1, userId2);
@@ -40,8 +40,8 @@ class UserCloseness {
         const supportsQuery = 'SELECT * FROM Support WHERE user_id IN (?, ?) AND writetime(support) > ?';
         const params = [userId1, userId2, lastCalculation];
 
-        const votes = await astraClient.execute(votesQuery, params);
-        const supports = await astraClient.execute(supportsQuery, params);
+        const votes = await db.execute(votesQuery, params);
+        const supports = await db.execute(supportsQuery, params);
 
         // Group votes and supports by proposal id
         const votesByProposal = groupByProposal(votes.rows);
@@ -83,7 +83,5 @@ function calculateScore(groupedRecords, scoreIncrement, type) {
     }
     return score;
 }
-
-module.exports = UserCloseness;
 
 module.exports = UserCloseness;

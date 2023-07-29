@@ -3,7 +3,7 @@ const router = express.Router();
 const Comments = require('../modules/comments'); // Assuming the relative path to the Comments class
 
 // Add a comment
-router.post('/comments', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { commentId, parentCommentId, entityId, entityType, userId, commentText } = req.body;
         await Comments.addComment(commentId, parentCommentId, entityId, entityType, userId, commentText);
@@ -15,7 +15,7 @@ router.post('/comments', async (req, res) => {
 });
 
 // Get comments for an entity
-router.get('/comments', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const { entityId, entityType } = req.query;
         const comments = await Comments.getComments(entityId, entityType);
@@ -27,7 +27,7 @@ router.get('/comments', async (req, res) => {
 });
 
 // Update comment score
-router.put('/comments/:commentId/score', async (req, res) => {
+router.put('/:commentId/score', async (req, res) => {
     try {
         const { commentId } = req.params;
         const { newScore } = req.body;
@@ -40,7 +40,7 @@ router.put('/comments/:commentId/score', async (req, res) => {
 });
 
 // Increment comment score
-router.patch('/comments/:commentId/incrementScore', async (req, res) => {
+router.patch('/:commentId/incrementScore', async (req, res) => {
     try {
         const { commentId } = req.params;
         await Comments.incrementScore(commentId);
@@ -52,7 +52,7 @@ router.patch('/comments/:commentId/incrementScore', async (req, res) => {
 });
 
 // Decrement comment score
-router.patch('/comments/:commentId/decrementScore', async (req, res) => {
+router.patch('/:commentId/decrementScore', async (req, res) => {
     try {
         const { commentId } = req.params;
         await Comments.decrementScore(commentId);

@@ -11,45 +11,45 @@ CREATE TABLE IF NOT EXISTS Comments (
     PRIMARY KEY (comment_id)
 );
 */
-import createLocalClient from '../utils/astraDB.js';
+const DBClient = require('../utils/localDB.js');
 
 class Comments {
     static async addComment(commentId, parentCommentId, entityId, entityType, userId, commentText) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'INSERT INTO Comments (comment_id, parent_comment_id, entity_id, entity_type, user_id, comment_text, comment_timestamp, score) VALUES (?, ?, ?, ?, ?, ?, toTimeStamp(now()), ?)';
         const params = [commentId, parentCommentId, entityId, entityType, userId, commentText, 0]; // Initialize score as 0
-        await astraClient.execute(query, params);
+        await db.execute(query, params, { hints : ['uuid', 'uuid', 'uuid', 'text', 'uuid', 'text', 'int']});
     }
 
     static async getComments(entityId, entityType) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'SELECT * FROM Comments WHERE entity_id = ? AND entity_type = ? ORDER BY score DESC';
         const params = [entityId, entityType];
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         return result.rows;
     }
 
     static async updateScore(commentId, newScore) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'UPDATE Comments SET score = ? WHERE comment_id = ?';
         const params = [newScore, commentId];
-        await astraClient.execute(query, params);
+        await db.execute(query, params);
     }
 
 
     static async incrementScore(commentId) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'UPDATE Comments SET score = score + 1 WHERE comment_id = ?';
         const params = [commentId];
-        await astraClient.execute(query, params);
+        await db.execute(query, params);
     }
 
     static async decrementScore(commentId) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'UPDATE Comments SET score = score - 1 WHERE comment_id = ?';
         const params = [commentId];
-        await astraClient.execute(query, params);
+        await db.execute(query, params);
     }
 }
 
-export default Comments;
+module.exports = Comments;

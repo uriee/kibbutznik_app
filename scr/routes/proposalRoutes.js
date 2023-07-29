@@ -5,7 +5,7 @@ const router = express.Router();
 
 
 // Create a proposal
-router.post('/proposals', async (req, res) => {
+router.post('', async (req, res) => {
     try {
         const { community_id, proposal_text, proposal_status, proposal_type, proposal_support } = req.body;
         const newProposal = {
@@ -27,7 +27,7 @@ router.post('/proposals', async (req, res) => {
     }
 });
 // Delete a proposal
-router.delete('/proposals/:proposalId', async (req, res) => {
+router.delete('/:proposalId', async (req, res) => {
     try {
         await Proposals.delete(req.params.proposalId);
         res.status(200).send('Proposal deleted successfully.');
@@ -37,7 +37,7 @@ router.delete('/proposals/:proposalId', async (req, res) => {
 });
 
 // Find a proposal by id
-router.get('/proposals/:proposalId', async (req, res) => {
+router.get('/:proposalId', async (req, res) => {
     try {
         const proposal = await Proposals.findById(req.params.proposalId);
         res.status(200).json(proposal);
@@ -47,7 +47,7 @@ router.get('/proposals/:proposalId', async (req, res) => {
 });
 
 // Get all proposals
-router.get('/proposals/', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const proposals = await Proposals.find();
         res.status(200).json(proposals);
@@ -57,7 +57,7 @@ router.get('/proposals/', async (req, res) => {
 });
 
 // Find proposals by type
-router.get('/proposals/type/:proposalType', async (req, res) => {
+router.get('/type/:proposalType', async (req, res) => {
     try {
         const proposals = await Proposals.findByType(req.params.proposalType);
         res.status(200).json(proposals);
@@ -67,7 +67,7 @@ router.get('/proposals/type/:proposalType', async (req, res) => {
 });
 
 // Find proposals by pulse
-router.get('/proposals/pulse/:pulseId', async (req, res) => {
+router.get('/pulse/:pulseId', async (req, res) => {
     try {
         const proposals = await Proposals.findProposalsByPulse(req.params.pulseId);
         res.status(200).json(proposals);
@@ -77,7 +77,7 @@ router.get('/proposals/pulse/:pulseId', async (req, res) => {
 });
 
 // Count votes for a proposal
-router.get('/proposals/:proposalId/votes', async (req, res) => {
+router.get('/:proposalId/votes', async (req, res) => {
     try {
         const count = await Proposals.countVotes(req.params.proposalId);
         res.status(200).json(count);
@@ -87,7 +87,7 @@ router.get('/proposals/:proposalId/votes', async (req, res) => {
 });
 
 // Count support for a proposal
-router.get('/proposals/:proposalId/support', async (req, res) => {
+router.get('/:proposalId/support', async (req, res) => {
     try {
         const count = await Proposals.countSupport(req.params.proposalId);
         res.status(200).json(count);
@@ -96,4 +96,4 @@ router.get('/proposals/:proposalId/support', async (req, res) => {
     }
 });
 
-export default router;
+module.exports =  router;

@@ -5,24 +5,24 @@ CREATE TABLE IF NOT EXISTS Pulse_Support (
     PRIMARY KEY ((pulse_id), user_id)
 );
 */
-import createLocalClient from '../utils/astraDB.js';
-import Pulse from './pulses.js';
+const DBClient = require('../utils/localDB.js');
+const Pulse = require('./pulses.js')
 
 class PulseSupport {
     static async create(community_id, user_id) {
         const pulse_id = Pulse.pulseIdByStatus(community_id, 1)
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'INSERT INTO Pulse_Support (user_id, pulse_id) VALUES (?, ?)';
         const params = [user_id, pulse_id];
-        await astraClient.execute(query, params);
+        await db.execute(query, params, { hints : ['uuid', 'uuid']});
     }
 
     static async delete(user_id, proposalId) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const pulse_id = Pulse.pulseIdByStatus(community_id, 1)
         const query = 'DELETE FROM Pulse_Support WHERE user_id = ? AND pulse_id = ?';
         const params = [user_id, pulse_id];
-        await astraClient.execute(query, params);
+        await db.execute(query, params);
     }
 
     static async findByPulseIdAndUserId(pulseId, userId) {
@@ -30,7 +30,7 @@ class PulseSupport {
             return null;
         }
 
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         let query = 'SELECT * FROM Pulse_Support WHERE';
         let params = [];
         let conditions = [];
@@ -46,7 +46,7 @@ class PulseSupport {
 
         query += ' ' + conditions.join(' AND ');
 
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         return result.rows;
     }
 
@@ -55,16 +55,16 @@ class PulseSupport {
             return null;
         }
     
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const pulse_id = Pulse.pulseIdByStatus(community_id, 1)
         const query = 'SELECT  COUNT(*) as count FROM Support WHERE pulse_id = ?';
         const params = [pulse_id];
     
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
 
         return result.rows[0].count;
     }    
 }
 
-module.exports = Support;
+module.exports = PulseSupport;
 

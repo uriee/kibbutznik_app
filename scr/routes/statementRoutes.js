@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Statements = require('./statements');
+const Statements = require('../modules/statements');
 
 // Find statements by community id
-router.get('/statements/community/:id', async (req, res) => {
+router.get('/community/:id', async (req, res) => {
     try {
         const communityId = req.params.id;
         const statements = await Statements.findByCommunityId(communityId);
@@ -15,7 +15,7 @@ router.get('/statements/community/:id', async (req, res) => {
 });
 
 // Find statements by text substring
-router.get('/statements/search/:substring', async (req, res) => {
+router.get('/search/:substring', async (req, res) => {
     try {
         const substring = req.params.substring;
         const statements = await Statements.findByTextSubstring(substring);
@@ -27,7 +27,7 @@ router.get('/statements/search/:substring', async (req, res) => {
 });
 
 // Create a new statement
-router.post('/statements', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { community_id, statement_text } = req.body;
         const newStatement = { community_id: community_id, statement_text: statement_text };

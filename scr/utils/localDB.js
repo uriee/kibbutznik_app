@@ -1,20 +1,29 @@
 const cassandra = require('cassandra-driver');
 
-async function createLocalClient() {
-    const client = new cassandra.Client({
-        contactPoints: ['127.0.0.1'],  // Update with your local IP if necessary
-        localDataCenter: 'datacenter1',  // Update if you have a different datacenter
-        keyspace: 'kbz'  // Your keyspace
-    });
-
-    try {
-        await client.connect();
-        console.log("Connected to local Cassandra DB successfully!");
-    } catch (err) {
-        console.error("Failed to connect to local Cassandra DB:", err);
+class DBClient {
+    constructor() {
+        this.client = new cassandra.Client({
+            contactPoints: ['127.0.0.1'],  // Update with your local IP if necessary
+            localDataCenter: 'datacenter1',  // Update if you have a different datacenter
+            keyspace: 'kbz'  // Your keyspace
+        });
+        this.client.connect();
     }
-    
-    return client;
+
+    static getInstance() {
+        if (!DBClient.instance) {
+            DBClient.instance = new DBClient();
+        }
+        return DBClient.instance;
+    }
+
+    async execute(query, params, options) {
+        if (!this.client.connected) {
+            await this.client.connect();
+        }
+        return this.client.execute(query, params, options);
+    }
 }
 
-module.exports = createLocalClient;
+
+module.exports = DBClient;

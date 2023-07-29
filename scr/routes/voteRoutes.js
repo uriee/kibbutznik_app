@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Vote = require('../modules/vote'); // Assuming the relative path to the Vote class
+const Vote = require('../modules/votes'); // Assuming the relative path to the Vote class
 
 // Add a vote
-router.post('/votes', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { user_id, community_id, proposal_id, vote } = req.body;
         await Vote.create(user_id, community_id, proposal_id, vote);
@@ -15,7 +15,7 @@ router.post('/votes', async (req, res) => {
 });
 
 // Delete votes for a proposal
-router.delete('/votes/:proposalId', async (req, res) => {
+router.delete('/:proposalId', async (req, res) => {
     try {
         const { proposalId } = req.params;
         await Vote.delete(proposalId);
@@ -27,7 +27,7 @@ router.delete('/votes/:proposalId', async (req, res) => {
 });
 
 // Get votes for a specific user, community, and proposal
-router.get('/votes', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const { userId, communityId, proposalId } = req.query;
         const votes = await Vote.getVotes(userId, communityId, proposalId);

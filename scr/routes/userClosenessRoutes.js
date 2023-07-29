@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const UserCloseness = require('../models/userCloseness'); // Assuming the relative path to the UserCloseness class
+const UserCloseness = require('../modules/user_closeness'); // Assuming the relative path to the UserCloseness class
 
 // Calculate closeness between two users
-router.get('/userCloseness/calc/:userId/:otherUserId', async (req, res) => {
+router.get('/calc/:userId/:otherUserId', async (req, res) => {
     try {
         const { userId, otherUserId } = req.params;
         const closeness = await UserCloseness.calc(userId, otherUserId);
@@ -15,7 +15,7 @@ router.get('/userCloseness/calc/:userId/:otherUserId', async (req, res) => {
 });
 
 // Find a UserCloseness by userId and otherUserId
-router.get('/userCloseness/:userId/:otherUserId', async (req, res) => {
+router.get('/:userId/:otherUserId', async (req, res) => {
     try {
         const { userId, otherUserId } = req.params;
         const userCloseness = await UserCloseness.find(userId, otherUserId);

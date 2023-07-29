@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const Members = require('../models/Members');
+const Members = require('../modules/members');
 
-router.get('/members/:userId', async (req, res) => {
+router.get('/:userId', async (req, res) => {
     try {
         const { userId, communityId } = req.params;
         const member = await Members.find(userId, communityId);
@@ -13,7 +13,7 @@ router.get('/members/:userId', async (req, res) => {
     }
 });
 
-router.post('/members', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { userId, communityId } = req.body;
         await Members.create(userId, communityId);
@@ -24,7 +24,7 @@ router.post('/members', async (req, res) => {
     }
 });
 
-router.get('/members/:userId/proposals', async (req, res) => {
+router.get('/:userId/proposals', async (req, res) => {
     try {
         const { userId } = req.params;
         const proposals = await Members.fetchMembershipProposal(userId);
@@ -35,7 +35,7 @@ router.get('/members/:userId/proposals', async (req, res) => {
     }
 });
 
-router.get('/members/:userId/support', async (req, res) => {
+router.get('/:userId/support', async (req, res) => {
     try {
         const { userId, communityId } = req.params;
         const supportedProposals = await Members.getSupportedProposals(userId, communityId);
@@ -46,7 +46,7 @@ router.get('/members/:userId/support', async (req, res) => {
     }
 });
 
-router.get('/members/:userId/votes', async (req, res) => {
+router.get('/:userId/votes', async (req, res) => {
     try {
         const { userId, communityId } = req.params;
         const votedProposals = await Members.getVotedProposals(userId, communityId);
@@ -57,7 +57,7 @@ router.get('/members/:userId/votes', async (req, res) => {
     }
 });
 
-router.get('/members/:communityId/seniority/gte/:seniority', async (req, res) => {
+router.get('/:communityId/seniority/gte/:seniority', async (req, res) => {
     try {
         const { communityId, seniority } = req.params;
         const members = await Members.seniorityGTE(communityId, seniority);
@@ -68,7 +68,7 @@ router.get('/members/:communityId/seniority/gte/:seniority', async (req, res) =>
     }
 });
 
-router.get('/members/:communityId/seniority/lte/:seniority', async (req, res) => {
+router.get('/:communityId/seniority/lte/:seniority', async (req, res) => {
     try {
         const { communityId, seniority } = req.params;
         const members = await Members.seniorityLTE(communityId, seniority);

@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const Variables = require('./variables');
+const Variables = require('../modules/variables');
 const uuid = require('uuid');
 
 // Create a new variable
-router.post('/variables', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { variable_id, variable_name, variable_value, variable_desc } = req.body;
         const newVariable = { 
@@ -25,7 +25,7 @@ router.post('/variables', async (req, res) => {
 });
 
 // Get variable value
-router.get('/variables/:communityId/:variableType', async (req, res) => {
+router.get('/:communityId/:variableType', async (req, res) => {
     try {
         const communityId = req.params.communityId;
         const variableType = req.params.variableType;
@@ -38,7 +38,7 @@ router.get('/variables/:communityId/:variableType', async (req, res) => {
 });
 
 // Get variable by community id and variable type
-router.get('/variables/:communityId/:variableType', async (req, res) => {
+router.get('/:communityId/:variableType', async (req, res) => {
     try {
         const communityId = req.params.communityId;
         const variableType = req.params.variableType;

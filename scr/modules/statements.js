@@ -7,22 +7,22 @@ CREATE TABLE IF NOT EXISTS Statements (
     statement_text text,
 );
 */
-import createLocalClient from '../utils/astraDB.js';
+const DBClient = require('../utils/localDB.js');
 
 class Statements {
     
     static async create(statement) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'INSERT INTO Statements (community_id, status, statement_text) VALUES (?, ?, ?)';
         const params = [statement.community_id, 1, statement.statement_text];
-        await astraClient.execute(query, params);
+        await db.execute(query, params,{ hints : ['uuid', 'int', 'text']});
     }
 
     static async removeStatement(statement_id) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         const query = 'UPDATE Statements SET status = ? WHERE statement_id = ?';
         const params = [2, statement_id]; // 2 is status for removed
-        await astraClient.execute(query, params);
+        await db.execute(query, params);
     }
 
     static async replaceStatement(statement_id, statement) {
@@ -31,7 +31,7 @@ class Statements {
     }
 
     static async findByCommunityId(communityId, statementId = null, status = null, statementText = null) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
         
         let query = 'SELECT * FROM Statements WHERE community_id = ?';
         let params = [communityId];
@@ -51,17 +51,17 @@ class Statements {
             params.push(statementText);
         }
 
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         return result.rows;
     }
 
     static async findByTextSubstring(textSubstring) {
-        const astraClient = await createLocalClient();
+       const db = DBClient.getInstance();
     
         let query = 'SELECT * FROM Statements WHERE AND statement_text LIKE ?';
         let params = ['%' + textSubstring + '%'];  // Add the wildcard '%' before and after the substring
     
-        const result = await astraClient.execute(query, params);
+        const result = await db.execute(query, params);
         return result.rows;
     }
 }

@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const PulseSupport = require('../models/pulseSupport'); // Assuming the relative path to the PulseSupport class
+const PulseSupport = require('../modules/pulse_supports'); // Assuming the relative path to the PulseSupport class
 
 // Create a PulseSupport
-router.post('/pulseSupport', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { community_id, user_id } = req.body;
         await PulseSupport.create(community_id, user_id);
@@ -15,7 +15,7 @@ router.post('/pulseSupport', async (req, res) => {
 });
 
 // Delete a PulseSupport
-router.delete('/pulseSupport/:userId/:pulseId', async (req, res) => {
+router.delete('/:userId/:pulseId', async (req, res) => {
     try {
         const { userId, pulseId } = req.params;
         await PulseSupport.delete(userId, pulseId);
@@ -27,7 +27,7 @@ router.delete('/pulseSupport/:userId/:pulseId', async (req, res) => {
 });
 
 // Get a PulseSupport by pulseId and userId
-router.get('/pulseSupport/:pulseId/:userId', async (req, res) => {
+router.get('/:pulseId/:userId', async (req, res) => {
     try {
         const { pulseId, userId } = req.params;
         const pulseSupport = await PulseSupport.findByPulseIdAndUserId(pulseId, userId);
@@ -39,7 +39,7 @@ router.get('/pulseSupport/:pulseId/:userId', async (req, res) => {
 });
 
 // Get PulseSupport count for a community
-router.get('/pulseSupportCount/:communityId', async (req, res) => {
+router.get('/Count/:communityId', async (req, res) => {
     try {
         const { communityId } = req.params;
         const count = await PulseSupport.countPulseSupport(communityId);

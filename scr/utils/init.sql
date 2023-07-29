@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS Variables (
     variable_type text,
     variable_value text,
     variable_desc text,
-    PRIMARY KEY (community_id, variable_id)
+    PRIMARY KEY (community_id, variable_type)
 );
 
 CREATE TABLE IF NOT EXISTS Default_Variable_Values (
@@ -145,5 +145,5 @@ CREATE INDEX IF NOT EXISTS ON closeness(last_calculation);
 CREATE INDEX IF NOT EXISTS ON pulse_support(user_id);
 CREATE INDEX IF NOT EXISTS ON pulse_support(pulse_id);
 CREATE INDEX IF NOT EXISTS ON statements(community_id);
-CREATE INDEX IF NOT EXISTS ON community_variables(community_id);
+CREATE INDEX IF NOT EXISTS ON variables(community_id);
 CREATE INDEX IF NOT EXISTS ON pulse(community_id);

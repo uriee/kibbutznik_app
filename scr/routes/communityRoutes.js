@@ -4,7 +4,7 @@ const Communities = require('../modules/communities.js'); // update path as need
 const uuid = require('uuid');
 const router = express.Router();
 
-router.get('/communities/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const community = await Communities.findById(id);
@@ -19,7 +19,7 @@ router.get('/communities/:id', async (req, res) => {
     }
 });
 
-router.post('/communities', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { parent_community_id, name } = req.body;
         const community_id = await Communities.create(parent_community_id, name);
@@ -31,7 +31,21 @@ router.post('/communities', async (req, res) => {
     }
 });
 
-router.get('/communities/:id/parents', async (req, res) => {
+router.post('/creatWithUser', async (req, res) => {
+    console.log("gdsfesfsjdfgsdjhfsgfhjsd")
+    try {
+        console.log("\ntt\n",req.body )
+        const { parent_community_id, name, user_id } = req.body;
+        console.log("\ntt\n",parent_community_id, name, user_id )
+        const newCommunityId = await Community.createWithUser(parent_community_id, name, user_id);
+        res.status(201).json({ message: 'Community and member created successfully', community_id: newCommunityId });
+    } catch (error) {
+        console.error('Failed to create community and member:');
+        res.status(500).json({ message: 'Failed to create community and member' });
+    }
+});
+
+router.get('/:id/parents', async (req, res) => {
     try {
         const id = req.params.id;
         const parents = await Communities.getParentsTree(id);
@@ -42,7 +56,7 @@ router.get('/communities/:id/parents', async (req, res) => {
     }
 });
 
-router.get('/communities/:id/members', async (req, res) => {
+router.get(':id/members', async (req, res) => {
     try {
         const id = req.params.id;
         const members = await Communities.getMembers(id);
@@ -54,7 +68,7 @@ router.get('/communities/:id/members', async (req, res) => {
 });
 
 
-router.get('/communities/:id/children', async (req, res) => {
+router.get('/:id/children', async (req, res) => {
     try {
         const id = req.params.id;
         const children = await Communities.getChildrenTree(id);
@@ -65,7 +79,7 @@ router.get('/communities/:id/children', async (req, res) => {
     }
 });
 
-router.get('/communities/:id/parent/:parentId', async (req, res) => {
+router.get('/:id/parent/:parentId', async (req, res) => {
     try {
         const { id, parentId } = req.params;
         const isParent = await Communities.isParentOf(parentId, id);
@@ -76,7 +90,7 @@ router.get('/communities/:id/parent/:parentId', async (req, res) => {
     }
 });
 
-router.get('/communities/:id/child/:childId', async (req, res) => {
+router.get('/:id/child/:childId', async (req, res) => {
     try {
         const { id, childId } = req.params;
         const isChild = await Communities.isChildOf(childId, id);
@@ -87,7 +101,7 @@ router.get('/communities/:id/child/:childId', async (req, res) => {
     }
 });
 
-router.get('/communities/:id/statements', async (req, res) => {
+router.get('/:id/statements', async (req, res) => {
     try {
         const id = req.params.id;
         const statements = await Communities.getStatements(id);
@@ -98,7 +112,7 @@ router.get('/communities/:id/statements', async (req, res) => {
     }
 });
 
-router.get('/communities/:id/proposals', async (req, res) => {
+router.get('/:id/proposals', async (req, res) => {
     try {
         const id = req.params.id;
         const proposals = await Communities.getProposals(id);
@@ -108,8 +122,8 @@ router.get('/communities/:id/proposals', async (req, res) => {
         res.status(500).json({ message: 'Failed to get proposals' });
     }
 });
-
-router.get('/communities/:id/balance', async (req, res) => {
+/*
+router.get('/:id/balance', async (req, res) => {
     try {
         const id = req.params.id;
         const balance = await Communities.getCommunityBalance(id);  
@@ -119,5 +133,5 @@ router.get('/communities/:id/balance', async (req, res) => {
         res.status(500).json({ message: 'Failed to get balance' });
     }
 });
-
+*/
 module.exports = router;
