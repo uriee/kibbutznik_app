@@ -8,10 +8,10 @@ router.get('/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const community = await Communities.findById(id);
-        if(community.length === 0) {
+        if(!community) {
             res.status(404).json({ message: 'Community not found' });
         } else {
-            res.status(200).json(community[0]);
+            res.status(200).json(community);
         }
     } catch (error) {
         console.error('Failed to get community:', error);
@@ -32,15 +32,11 @@ router.post('/', async (req, res) => {
 });
 
 router.post('/creatWithUser', async (req, res) => {
-    console.log("gdsfesfsjdfgsdjhfsgfhjsd")
     try {
-        console.log("\ntt\n",req.body )
         const { parent_community_id, name, user_id } = req.body;
-        console.log("\ntt\n",parent_community_id, name, user_id )
-        const newCommunityId = await Community.createWithUser(parent_community_id, name, user_id);
+        const newCommunityId = await Communities.createWithUser(parent_community_id, name, user_id);
         res.status(201).json({ message: 'Community and member created successfully', community_id: newCommunityId });
     } catch (error) {
-        console.error('Failed to create community and member:');
         res.status(500).json({ message: 'Failed to create community and member' });
     }
 });
@@ -56,7 +52,7 @@ router.get('/:id/parents', async (req, res) => {
     }
 });
 
-router.get(':id/members', async (req, res) => {
+router.get('/:id/members', async (req, res) => {
     try {
         const id = req.params.id;
         const members = await Communities.getMembers(id);
@@ -79,7 +75,7 @@ router.get('/:id/children', async (req, res) => {
     }
 });
 
-router.get('/:id/parent/:parentId', async (req, res) => {
+router.get('/:id/isparent/:parentId', async (req, res) => {
     try {
         const { id, parentId } = req.params;
         const isParent = await Communities.isParentOf(parentId, id);
@@ -90,7 +86,8 @@ router.get('/:id/parent/:parentId', async (req, res) => {
     }
 });
 
-router.get('/:id/child/:childId', async (req, res) => {
+router.get('/:id/ischild/:childId', async (req, res) => {
+    console.log("dfjhjkfesfkjsfhskjfbsekfjsbdfkjesbfskj")
     try {
         const { id, childId } = req.params;
         const isChild = await Communities.isChildOf(childId, id);

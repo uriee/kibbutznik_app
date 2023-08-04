@@ -21,10 +21,10 @@ class Users {
     static async create(user_name, password, about, wallet_address) {
         const db = DBClient.getInstance();
         const user_id = uuid.v4();
-        // assuming `user` is an object with fields: user_id, user_name, password, about, wallet_address
         const query = 'INSERT INTO Users (user_id, user_name, password, about, wallet_address) VALUES (?, ?, ?, ?, ?)';
         const params = [user_id, user_name, password, about, wallet_address];
         await db.execute(query, params, { hints : ['uuid', 'text', 'text', 'text', 'text']});
+        return  user_id
     }
 
     static async getMembershipProposals(id) {

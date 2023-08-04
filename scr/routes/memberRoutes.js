@@ -24,17 +24,6 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/:userId/proposals', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const proposals = await Members.fetchMembershipProposal(userId);
-        res.status(200).json(proposals);
-    } catch (error) {
-        console.error('Failed to get proposals:', error);
-        res.status(500).json({ message: 'Failed to get proposals' });
-    }
-});
-
 router.get('/:userId/support', async (req, res) => {
     try {
         const { userId, communityId } = req.params;

@@ -56,22 +56,6 @@ class Members {
         await db.execute(query, params);
     }
 
-    static async fetchMembershipProposal(userId) {
-       const db = DBClient.getInstance();
-        const proposalQuery = 'SELECT proposal_id FROM Membership_Proposals WHERE user_id = ?';
-        const proposalParams = [userId];
-        const proposalResult = await db.execute(proposalQuery, proposalParams);
-        
-        // Assuming there is only one proposal per user.
-        // If there are multiple proposals for a user, you would need to handle that case.
-        const proposalId = proposalResult.rows[0].proposal_id;
-
-        const detailedQuery = 'SELECT * FROM Proposals WHERE proposal_id = ?';
-        const detailedParams = [proposalId];
-        const detailedResult = await db.execute(detailedQuery, detailedParams);
-        return detailedResult.rows;
-    }
-
     static async getSupportedProposals(userId, communityId = null) {
        const db = DBClient.getInstance();
         let query = 'SELECT * FROM Support WHERE user_id = ?';
@@ -98,17 +82,17 @@ class Members {
 
     static async seniorityGTE(community_id, seniority) {
        const db = DBClient.getInstance();
-        const query = 'SELECT * FROM Members WHERE community_id = ? AND seniority >= ?';
+        const query = 'SELECT * FROM Members WHERE community_id = ? AND seniority >= ? ALLOW FILTERING';
         const params = [community_id, seniority];
-        const result = await db.execute(query, params);
+        const result = await db.execute(query, params, { hints : ['uuid', 'int']});
         return result.rows;
     }
 
     static async seniorityLTE(community_id, seniority) {
        const db = DBClient.getInstance();
-        const query = 'SELECT * FROM Members WHERE community_id = ? AND seniority <= ?';
+        const query = 'SELECT * FROM Members WHERE community_id = ? AND seniority <= ? ALLOW FILTERING';
         const params = [community_id, seniority];
-        const result = await db.execute(query, params);
+        const result = await db.execute(query, params, { hints : ['uuid', 'int']});
         return result.rows;
     }
 }

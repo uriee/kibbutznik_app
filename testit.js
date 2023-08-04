@@ -8,5 +8,5 @@
 //xxx = Members.create('117af806-dc3e-458b-bab2-7539141ad7d3', '8302231b-bc51-4253-8c35-818501e55f8d')
 
 const Users = require('./scr/modules/users')
-xxx = Users.create('Uri', '1234','Good guy', 'a2aedscd56dfv367')
+const xxx = Users.create('Uri', '1234','Good guy', 'a2aedscd56dfv367')
 console.log(xxx)

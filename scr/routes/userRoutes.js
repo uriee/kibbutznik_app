@@ -7,17 +7,9 @@ const router = express.Router();
 router.post('/', async (req, res) => {
     try {
         const { user_name, password, about, wallet_address } = req.body;  // Get the data from the request's body
-        const newUser = {
-            user_id: uuid.v4(),  // Generate a new UUID
-            user_name: user_name, 
-            password: password,
-            about: about,
-            wallet_address: wallet_address
-        };
-
-        await Users.create(newUser);
-        console.log('User created successfully!');
-        res.status(201).json({ message: 'User created successfully!', user_id: newUser.user_id });
+        const id = await Users.create(user_name, password, about, wallet_address);
+        console.log('User created successfully!',id);
+        res.status(201).json({ message: 'User created successfully!', id: id});
     } catch (error) {
         console.error('Failed to create user:', error);
         res.status(500).json({ message: 'Failed to create user' });
@@ -44,7 +36,6 @@ router.get('/:id', async (req, res) => {
             res.status(200).json(user[0]);
         }
     } catch (error) {
-        console.error('Failed to get user:', error);
         res.status(500).json({ message: 'Failed to get user' });
     }
 });

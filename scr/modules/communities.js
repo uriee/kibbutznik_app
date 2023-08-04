@@ -7,12 +7,14 @@ const Users = require('../modules/users.js');
 const uuid = require('uuid');
 
 class Communities {
+
     static async findById(communityId) {
         const db = DBClient.getInstance();
         const query = 'SELECT * FROM Communities WHERE community_id = ?';
         const params = [communityId];
         const result = await db.execute(query, params);
-        return result.rows;
+        // Return only the first community object or null if no community found
+        return result.rows.length > 0 ? result.rows[0] : null;
     }
 
     static async create(parent_community_id, name) {
@@ -22,9 +24,8 @@ class Communities {
         const community_id = await uuid.v4();
         const query = 'INSERT INTO Communities (community_id, parent_community_id, status) VALUES (?, ?, ?)';
         const params = [community_id, parent_community_id, 1];
-        xxx = await db.execute(query, params, { hints : ['uuid','uuid', 'int']});
+        await db.execute(query, params, { hints : ['uuid','uuid', 'int']});
         await this.copyVariables(community_id);
-
         await this.setName(community_id, name);
         return community_id;
     }
@@ -63,8 +64,8 @@ class Communities {
     static async getParentsTree(communityId) {
         let community = await this.findById(communityId);
         let parentsTree = [];
-
-        while (community.parent_community_id != 0) {
+        const nilUuid = '00000000-0000-0000-0000-000000000000';
+        while (community.parent_community_id != nilUuid) {
             community = await this.findById(community.parent_community_id);
             parentsTree.push(community);
         }
@@ -74,13 +75,15 @@ class Communities {
 
     static async getChildrenTree(communityId) {
         const db = DBClient.getInstance();
-        const query = 'SELECT * FROM Communities WHERE parent_community_id = ?';
+        const query = 'SELECT * FROM Communities WHERE parent_community_id = ? ALLOW FILTERING';
+
         const params = [communityId];
         const result = await db.execute(query, params);
 
         const children = result.rows;
         for (let child of children) {
             child.children = await this.getChildrenTree(child.community_id);
+            console.log("child:",child)
         }
 
         return children;
@@ -88,16 +91,18 @@ class Communities {
 
     static async isParentOf(parentCommunityId, childCommunityId) {
         let community = await this.findById(childCommunityId);
-
-        while (community.parent_community_id != 0) {
-            if (community.parent_community_id === parentCommunityId) return true;
+        const nilUuid = '00000000-0000-0000-0000-000000000000';
+        while (community.parent_community_id != nilUuid) {
+            if (community.parent_community_id == parentCommunityId) return true;
             community = await this.findById(community.parent_community_id);
         }
 
         return false;
     }
 
+
     static async isChildOf(childCommunityId, parentCommunityId) {
+        console.log("hildCommunityId, parentCommunityId:", childCommunityId, parentCommunityId)
         return await this.isParentOf(parentCommunityId, childCommunityId);
     }
 

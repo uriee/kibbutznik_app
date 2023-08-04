@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS Users (
 
 CREATE TABLE IF NOT EXISTS Proposals (
     community_id uuid,
+    user_id uuid,
     proposal_id uuid,
     proposal_text text,
     proposal_status text,

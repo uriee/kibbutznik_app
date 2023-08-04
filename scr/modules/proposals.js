@@ -26,21 +26,43 @@ const PROPOSAL_STATUS_LIFECYCLE = ['Draft', 'OutThere', 'OnTheAir', 'Accepted'];
 
 class Proposals {
 
+    static async create(community_id, proposal_type, proposal_text, val_uuid, val_text) {
+        if (!PROPOSAL_STATUS_ENUM.includes(proposal_type=='Membership' ? 'OutThere' : 'Draft')) {
+            throw new Error(`Invalid proposal_status: ${proposal_status}`);
+        }
     
-    static async create(proposal) {
-        if (!PROPOSAL_STATUS_ENUM.includes(proposal.proposal_status)) {
-            throw new Error(`Invalid proposal_status: ${proposal.proposal_status}`);
+        if (!PROPOSAL_TYPE_ENUM.includes(proposal_type)) {
+            throw new Error(`Invalid proposal_type: ${proposal_type}`);
         }
-        
-        if (!PROPOSAL_TYPE_ENUM.includes(proposal.proposal_type)) {
-            throw new Error(`Invalid proposal_type: ${proposal.proposal_type}`);
+    
+        const proposal_status = proposal_type == 'Membership' ? 'OutThere' : 'Draft';
+        const proposal_id = uuid.v4();
+        const db = DBClient.getInstance();
+    
+        let queryColumns = 'INSERT INTO Proposals (community_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support, age, created_at, updated_at';
+        let queryValues = 'VALUES (?, ?, ?, ?, ?, ?, ?';
+        let params = [community_id, proposal_id, proposal_text, proposal_status, proposal_type, 0, 0, currentTime, currentTime];
+    
+        if (val_uuid) {
+            queryColumns += ', val_uuid';
+            queryValues += ', ?';
+            params.push(val_uuid);
         }
-
-       const db = DBClient.getInstance();
-        const query = 'INSERT INTO Proposals (community_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support, age) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        const params = [proposal.community_id, proposal.proposal_id, proposal.proposal_text, proposal.proposal_status, proposal.proposal_type, proposal.proposal_support, 0];
-        await db.execute(query, params, { hints : ['uuid', 'uuid', 'text', 'text', 'text', 'int', 'int']});
+    
+        if (val_text) {
+            queryColumns += ', val_text';
+            queryValues += ', ?';
+            params.push(val_text);
+        }
+    
+        const query = queryColumns + ') ' + queryValues + ')';
+        const hints = ['uuid', 'uuid', 'text', 'text', 'text', 'int', 'int'];
+    
+        const ret = await db.execute(query, params, { hints });
+        console.log("create proposal", ret);
+        return ret;
     }
+    
 
     static async delete(proposalId) {
         const db = DBClient.getInstance();

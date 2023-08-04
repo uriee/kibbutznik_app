@@ -6,16 +6,15 @@ async function testCreateCommunity() {
         const newCommunity = {
             parent_community_id: '00000000-0000-0000-0000-000000000000', 
             name: 'TestCommunity',
-            user_id: '54d14c5b-c05e-4e1b-8c8c-8608dc3541c5',
+            user_id: uuidV4('54d14c5b-c05e-4e1b-8c8c-8608dc3541c5'),
         };
         console.log("11", newCommunity)
-        const response = await axios.post('http://localhost:3000/creatWithUser', newCommunity);
+        const response = await axios.post('http://localhost:3000/communities/creatWithUser', newCommunity);
         console.log('Community created successfully:', response.data);
         const communityId = response.data.community_id;
-        console.log("plp", communityId, response.data)
         await testGetCommunityById(communityId);
     } catch (error) {
-        console.error('Failed to create community2:');
+        console.error('Failed to create community:');
     }
 }
 

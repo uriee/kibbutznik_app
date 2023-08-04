@@ -7,15 +7,14 @@ const router = express.Router();
 // Create a proposal
 router.post('', async (req, res) => {
     try {
-        const { community_id, proposal_text, proposal_status, proposal_type, proposal_support } = req.body;
+        const { community_id, proposal_type , user_id, proposal_text, val_uuid, val_text } = req.body;
         const newProposal = {
             proposal_id: uuid.v4(),
             community_id: community_id,
             proposal_text: proposal_text,
-            proposal_status: proposal_status,
             proposal_type: proposal_type,
-            proposal_support: proposal_support,
-            age: 0
+            val_uuid: val_uuid,
+            val_text: val_text
         };
 
         await Proposals.create(newProposal);
@@ -26,6 +25,7 @@ router.post('', async (req, res) => {
         res.status(500).json({ message: 'Failed to create proposal' });
     }
 });
+
 // Delete a proposal
 router.delete('/:proposalId', async (req, res) => {
     try {
