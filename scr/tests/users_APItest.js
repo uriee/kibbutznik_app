@@ -22,7 +22,7 @@ describe('Users API', () => {
         .send(user)
         .end((err, res) => {
           expect(res.status).to.equal(201);
-          userId = res.body.id;
+          userId = res.body.user_id;
           done();
         });
     });

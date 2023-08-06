@@ -1,8 +1,9 @@
 CREATE TABLE IF NOT EXISTS Statements (
     community_id uuid,
-    statement_id uuid PRIMARY KEY,
+    statement_id uuid,
     status int, 
     statement_text text,
+    PRIMARY KEY (community_id, statement_id)
 );
 
 CREATE TABLE IF NOT EXISTS Variables (
@@ -55,7 +56,7 @@ CREATE TABLE IF NOT EXISTS Proposals (
     proposal_id uuid,
     proposal_text text,
     proposal_status text,
-    propsal_type text,
+    proposal_type text,
     proposal_support int,
     pulse_id uuid,
     val_uuid uuid,

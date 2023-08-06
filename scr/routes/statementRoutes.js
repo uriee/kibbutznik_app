@@ -32,9 +32,9 @@ router.post('/', async (req, res) => {
         const { community_id, statement_text } = req.body;
         const newStatement = { community_id: community_id, statement_text: statement_text };
 
-        await Statements.create(newStatement);
+        const statement_id = await Statements.create(newStatement);
         console.log('Statement created successfully!');
-        res.status(201).json({ message: 'Statement created successfully!', statement: newStatement });
+        res.status(201).json({ message: 'Statement created successfully!', statement: newStatement , statement_id: statement_id});
     } catch (error) {
         console.error('Failed to create statement:', error);
         res.status(500).json({ message: 'Failed to create statement' });

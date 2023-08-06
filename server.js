@@ -26,7 +26,7 @@ app.use(bodyParser.json());
 app.use('/users', userRoutes);
 app.use('/comments', commentRoutes);
 app.use('/members', memberRoutes);
-app.use('/proposlas', proposalRoutes);
+app.use('/proposals', proposalRoutes);
 app.use('/pulse', pulseRoutes);
 app.use('/pulseSupport', pulseSupportRoutes);
 app.use('/support', supportRoutes);

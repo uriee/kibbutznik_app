@@ -9,7 +9,7 @@ router.post('/', async (req, res) => {
         const { user_name, password, about, wallet_address } = req.body;  // Get the data from the request's body
         const id = await Users.create(user_name, password, about, wallet_address);
         console.log('User created successfully!',id);
-        res.status(201).json({ message: 'User created successfully!', id: id});
+        res.status(201).json({ message: 'User created successfully!', user_id: id});
     } catch (error) {
         console.error('Failed to create user:', error);
         res.status(500).json({ message: 'Failed to create user' });

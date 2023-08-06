@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.post('/creatWithUser', async (req, res) => {
+router.post('/createWithUser', async (req, res) => {
     try {
         const { parent_community_id, name, user_id } = req.body;
         const newCommunityId = await Communities.createWithUser(parent_community_id, name, user_id);

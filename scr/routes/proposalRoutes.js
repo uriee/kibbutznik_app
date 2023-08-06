@@ -5,21 +5,13 @@ const router = express.Router();
 
 
 // Create a proposal
-router.post('', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
-        const { community_id, proposal_type , user_id, proposal_text, val_uuid, val_text } = req.body;
-        const newProposal = {
-            proposal_id: uuid.v4(),
-            community_id: community_id,
-            proposal_text: proposal_text,
-            proposal_type: proposal_type,
-            val_uuid: val_uuid,
-            val_text: val_text
-        };
-
-        await Proposals.create(newProposal);
-        console.log('Proposal created successfully!');
-        res.status(201).json({ message: 'Proposal created successfully!', proposal_id: newProposal.proposal_id });
+        const { community_id, user_id, proposal_type, proposal_text, val_uuid, val_text } = req.body;
+        console.log("rrrr",req.body)
+        const proposal_id = await Proposals.create(community_id, user_id, proposal_type, proposal_text, val_uuid, val_text);
+        console.log('Proposal created successfully!', proposal_id);
+        res.status(201).json({ message: 'Proposal created successfully!', proposal_id: proposal_id});
     } catch (error) {
         console.error('Failed to create proposal:', error);
         res.status(500).json({ message: 'Failed to create proposal' });

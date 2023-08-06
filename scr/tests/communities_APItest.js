@@ -15,9 +15,9 @@ describe('Communities API', () => {
     user_id: uuidV4('54d14c5b-c05e-4e1b-8c8c-8608dc3541c5'),
   };
 
-  it('POST /communities/creatWithUser', (done) => {
+  it('POST /communities/createWithUser', (done) => {
     chai.request(server)
-      .post('/communities/creatWithUser')
+      .post('/communities/createWithUser')
       .send(newCommunity)
       .end((err, res) => {
         expect(res.status).to.equal(201);

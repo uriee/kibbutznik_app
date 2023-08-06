@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
 
         await Variables.create(newVariable);
         console.log('Variable created successfully!');
-        res.status(201).json({ message: 'Variable created successfully!', variable: newVariable });
+        res.status(201).json({ message: 'Variable created successfully!', variable: newVariable, variable_id: variable_id });
     } catch (error) {
         console.error('Failed to create variable:', error);
         res.status(500).json({ message: 'Failed to create variable' });

@@ -11,10 +11,11 @@ const DBClient = require('../utils/localDB.js');
 
 class Statements {
     
-    static async create(statement) {
-       const db = DBClient.getInstance();
-        const query = 'INSERT INTO Statements (community_id, status, statement_text) VALUES (?, ?, ?)';
-        const params = [statement.community_id, 1, statement.statement_text];
+    static async create(community_id , statement_text) {
+        const db = DBClient.getInstance();
+        const statement_id = uuid.v4();
+        const query = 'INSERT INTO Statements (community_id, statement_id, status, statement_text) VALUES (?, ?, ?)';
+        const params = [community_id, statement_id, 1, statement_text];
         await db.execute(query, params,{ hints : ['uuid', 'int', 'text']});
     }
 

@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS Proposals (
     PRIMARY KEY ((community_id), proposal_id)
 );
 */
+const uuid = require('uuid');
 const DBClient = require('../utils/localDB.js');
 const { create: createMember, throwOut } = require('./members.js');
 const { create: createStatement, removeStatement, replaceStatement } = require('./statements.js');
@@ -26,11 +27,11 @@ const PROPOSAL_STATUS_LIFECYCLE = ['Draft', 'OutThere', 'OnTheAir', 'Accepted'];
 
 class Proposals {
 
-    static async create(community_id, proposal_type, proposal_text, val_uuid, val_text) {
+    static async create(community_id, user_id, proposal_type, proposal_text, val_uuid, val_text) {
         if (!PROPOSAL_STATUS_ENUM.includes(proposal_type=='Membership' ? 'OutThere' : 'Draft')) {
             throw new Error(`Invalid proposal_status: ${proposal_status}`);
         }
-    
+        console.log("community_id, user_id, proposal_type, proposal_text, val_uuid, val_text\n",community_id, user_id, proposal_type, proposal_text, val_uuid, val_text)
         if (!PROPOSAL_TYPE_ENUM.includes(proposal_type)) {
             throw new Error(`Invalid proposal_type: ${proposal_type}`);
         }
@@ -39,28 +40,32 @@ class Proposals {
         const proposal_id = uuid.v4();
         const db = DBClient.getInstance();
     
-        let queryColumns = 'INSERT INTO Proposals (community_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support, age, created_at, updated_at';
-        let queryValues = 'VALUES (?, ?, ?, ?, ?, ?, ?';
-        let params = [community_id, proposal_id, proposal_text, proposal_status, proposal_type, 0, 0, currentTime, currentTime];
-    
+        let queryColumns = 'INSERT INTO Proposals (community_id, user_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support, age, created_at, updated_at';
+        let queryValues = 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, totimestamp(now()), totimestamp(now())';
+        let params = [community_id, user_id, proposal_id, proposal_text, proposal_status, proposal_type, 0, 0];
+        let hints = ['uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'int', 'int'];
+        
         if (val_uuid) {
             queryColumns += ', val_uuid';
             queryValues += ', ?';
             params.push(val_uuid);
+            hints.push('uuid')
         }
     
         if (val_text) {
             queryColumns += ', val_text';
             queryValues += ', ?';
             params.push(val_text);
+            hints.push('text')
         }
-    
+        
         const query = queryColumns + ') ' + queryValues + ')';
-        const hints = ['uuid', 'uuid', 'text', 'text', 'text', 'int', 'int'];
-    
-        const ret = await db.execute(query, params, { hints });
+        console.log("Query",query)
+        console.log("PPPP",params)
+        console.log("HHHH",hints)
+        const ret = await db.execute(query, params, { hints : hints });
         console.log("create proposal", ret);
-        return ret;
+        return proposal_id;
     }
     
 
@@ -194,7 +199,7 @@ class Proposals {
 
         switch(proposal.type) {
             case 'Membership':
-                return await createMemeber(proposal.community_id, proposal.val_uuid);
+                return await createMemeber(proposal.community_id, proposal.user_id);
             case 'ThrowOut':
                 return await throwOut(proposal.community_id, proposal.val_uuid);
             case 'AddStatement':
@@ -204,7 +209,7 @@ class Proposals {
             case 'ReplaceStatement':
                 return await replaceStatement(proposal.community_id, proposal.val_uuid, proposal.val_text);
             case 'ChangeVariable':
-                return await updateVariableValue(proposal.community_id, proposal.val_uuid, proposal.val_text);
+                return await updateVariableValue(proposal.community_id, proposal.proposal_text, proposal.val_text);
             case 'AddAction':
                 return await createAction(proposal.val_text, proposal.community_id);
             case 'EndAction':

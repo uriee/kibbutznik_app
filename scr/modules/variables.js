@@ -8,6 +8,7 @@ class Variables {
         const query = 'INSERT INTO Variables (community_id, variable_id, variable_name, variable_value, variable_desc,) VALUES (?, ?, ?, ?)';
         const params = [variable.community_id, variable.variable_id, variable.variable_name, variable.variable_value, variable.variable_desc];
         await db.execute(query, params);
+        return variable.variable_id
     }
 
 
