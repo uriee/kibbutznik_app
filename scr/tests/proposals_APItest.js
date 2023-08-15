@@ -8,6 +8,7 @@ const expect = chai.expect;
 
 describe('API Tests', () => {
   let FirstMember, AnotherMember1, AnotherMember2;
+  let membership1, membership2, changeVariable1, newStatement1
   let communityId;
 
   it('Create FirstMember user', (done) => {
@@ -79,6 +80,7 @@ describe('API Tests', () => {
         .post('/proposals')
         .send({ community_id: communityId,  user_id: AnotherMember1, proposal_type: 'Membership', proposal_text: text})
         .end((err, res) => {
+            membership1 = res.body.proposal_id
             console.log("q1:", res.status, res.body, err)
             expect(res).to.have.status(201);
             let text = "Hey let me in. AnotherMember2"
@@ -87,12 +89,15 @@ describe('API Tests', () => {
             .post('/proposals')
             .send({ community_id: communityId, user_id: AnotherMember2, proposal_type: 'Membership', proposal_text: text})
             .end((err, res) => {
+                membership2 = res.body.proposal_id
                 console.log("q2:", res.status, res.body)
                 expect(res).to.have.status(201);
                 done();
             });
         });
     },700)
+
+    
   });
 
   it('Create a proposal to change the community variable variable_type = "MinCommittee" to 1', (done) => {
@@ -107,6 +112,7 @@ describe('API Tests', () => {
             val_text: 'uri'
         })
         .end((err, res) => {
+            changeVariable1 = res.body.proposal_id
             console.log("q3:", res.status, res.body)
             expect(res).to.have.status(201);
             done();
@@ -125,12 +131,83 @@ describe('API Tests', () => {
             proposal_text: 'Add a new statement for better clarity',
         })
         .end((err, res) => {
+            newStatement1 = res.body.proposal_id
             console.log("q4:", res.status, res.body)
             expect(res).to.have.status(201);
             done();
         });
-    },700)
+    },600)
   });
 
+  it('should update proposal status', (done) => {
+    setTimeout(() => {
+        chai.request(server)
+            .put(`/proposals/status`)
+            .send({ 'direction': true, 'proposal_id': membership1 })
+            .end((err, res) => {
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 900);
+});
+
+  it('should find a proposal by id', (done) => {
+      setTimeout(() => {
+          chai.request(server)
+              .get(`/proposals/${membership1}`)
+              .end((err, res) => {
+                  expect(res).to.have.status(200);
+                  done();
+              });
+      }, 900);
+  });
+
+  // Testing Get all proposals route
+  it('should get all proposals', (done) => {
+      setTimeout(() => {
+          chai.request(server)
+              .get(`/proposals/${communityId}/0/0`)
+              .end((err, res) => {
+                  console.log(res.body)
+                  expect(res).to.have.status(200);
+                  done();
+              });
+      }, 900);
+  });
+
+  it('should find proposals by pulse', (done) => {
+      setTimeout(() => {
+          chai.request(server)
+              .get(`/proposals/pulse/${membership1}`)
+              .end((err, res) => {
+                  expect(res).to.have.status(200);
+                  done();
+              });
+      }, 900);
+  });
+
+  it('should execute a Membership proposal', (done) => {
+      setTimeout(() => {
+          chai.request(server)
+              .post(`/proposals/execute/${membership1}`)
+              .end((err, res) => {
+                  expect(res).to.have.status(200);
+                  done();
+              });
+      }, 900);
+  });
+
+  it('should execute a new Statement proposal', (done) => {
+    setTimeout(() => {
+        chai.request(server)
+            .post(`/proposals/execute/${newStatement1}`)
+            .end((err, res) => {
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 900);
+  });
 
 });
+
+newStatement1

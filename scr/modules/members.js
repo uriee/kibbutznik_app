@@ -28,11 +28,11 @@ class Members {
         return result.rows;
     }
 
-    static async create(user_id, community_id) {
+    static async create_old(user_id, community_id) {
        const db = DBClient.getInstance();
-
+        console.log("user_id, community_id",user_id, community_id)
         // Check if user already exists in community
-        const checkQuery = 'SELECT * FROM Members WHERE community_id = ? AND user_id = ?';
+        const checkQuery = `SELECT * FROM Members WHERE community_id = ? AND user_id = ?`;
         const checkParams = [community_id, user_id];
         const checkResult = await db.execute(checkQuery, checkParams);
 
@@ -46,6 +46,25 @@ class Members {
             const insertQuery = 'INSERT INTO Members (community_id, user_id, status, seniority) VALUES (?, ?, ?, ?)';
             const insertParams = [community_id, user_id, 1, 0];
             await db.execute(insertQuery, insertParams, { hints : ['uuid', 'uuid', 'int', 'int']});
+        }
+    }
+
+    static async create(community_id, user_id) {
+        const db = DBClient.getInstance();
+        console.log("user_id, community_id", user_id.toString(), community_id);
+    
+        // Try to update first
+        const updateQuery = `UPDATE members SET status = 1 WHERE community_id = ${community_id.toString()} AND user_id = ${user_id.toString()}`;
+        const updateParams = [1, community_id.toString(), user_id.toString()];
+        console.log("updateResult", updateQuery, updateParams)
+        const updateResult = await db.execute(updateQuery);
+        console.log("updateResult", updateResult)
+        // Check if update affected any rows
+        if (updateResult.rowLength === 0) {
+            // No rows updated, so insert new record
+            const insertQuery = 'INSERT INTO Members (community_id, user_id, status, seniority) VALUES (?, ?, ?, ?)';
+            const insertParams = [community_id, user_id, 1, 0];
+            await db.execute(insertQuery, insertParams, { hints: ['uuid', 'uuid', 'int', 'int'] });
         }
     }
 

@@ -18,11 +18,12 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Delete a proposal
-router.delete('/:proposalId', async (req, res) => {
+// Update Status of a Proposal
+router.put('/status', async (req, res) => {
     try {
-        await Proposals.delete(req.params.proposalId);
-        res.status(200).send('Proposal deleted successfully.');
+        console.log("qwer",req.body)
+        await Proposals.UpdateStatus(req.body.proposal_id, req.body.direction);
+        res.status(200).send(`Status updated for proposal with ID: ${req.body.proposal_id}`);
     } catch (error) {
         res.status(500).send(error.message);
     }
@@ -39,24 +40,18 @@ router.get('/:proposalId', async (req, res) => {
 });
 
 // Get all proposals
-router.get('/', async (req, res) => {
+router.get('/:communityId/:proposalStatus/:proposalType', async (req, res) => {
+    console.log("Good",req.params.communityId, req.params.proposalStatus, req.params.proposalType)
+    const proposalStatus = req.params.proposalStatus == '0' ? null : req.params.proposalStatus
+    const proposalType = req.params.proposalStatus == '0' ? null : req.params.proposalType
     try {
-        const proposals = await Proposals.find();
+        const proposals = await Proposals.find(req.params.communityId, proposalStatus , proposalType );
         res.status(200).json(proposals);
     } catch (error) {
         res.status(500).send(error.message);
     }
 });
 
-// Find proposals by type
-router.get('/type/:proposalType', async (req, res) => {
-    try {
-        const proposals = await Proposals.findByType(req.params.proposalType);
-        res.status(200).json(proposals);
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-});
 
 // Find proposals by pulse
 router.get('/pulse/:pulseId', async (req, res) => {
@@ -68,24 +63,13 @@ router.get('/pulse/:pulseId', async (req, res) => {
     }
 });
 
-// Count votes for a proposal
-router.get('/:proposalId/votes', async (req, res) => {
+router.post('/execute/:proposal_id', async (req, res) => {
     try {
-        const count = await Proposals.countVotes(req.params.proposalId);
-        res.status(200).json(count);
+        const result = await Proposals.executeProposal(req.params.proposal_id);
+        res.status(200).json(result);
     } catch (error) {
         res.status(500).send(error.message);
     }
-});
-
-// Count support for a proposal
-router.get('/:proposalId/support', async (req, res) => {
-    try {
-        const count = await Proposals.countSupport(req.params.proposalId);
-        res.status(200).json(count);
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-});
+})
 
 module.exports =  router;

@@ -1,17 +1,4 @@
 // models/Proposals.js
-/*
-CREATE TABLE IF NOT EXISTS Proposals (
-    community_id uuid,
-    proposal_id uuid,
-    proposal_text text,
-    proposal_status text,
-    propsal_type
-    proposal_support int,
-    pulse_id uuid, 
-    age int
-    PRIMARY KEY ((community_id), proposal_id)
-);
-*/
 const uuid = require('uuid');
 const DBClient = require('../utils/localDB.js');
 const { create: createMember, throwOut } = require('./members.js');
@@ -40,10 +27,10 @@ class Proposals {
         const proposal_id = uuid.v4();
         const db = DBClient.getInstance();
     
-        let queryColumns = 'INSERT INTO Proposals (community_id, user_id, proposal_id, proposal_text, proposal_status, proposal_type, proposal_support, age, created_at, updated_at';
-        let queryValues = 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, totimestamp(now()), totimestamp(now())';
-        let params = [community_id, user_id, proposal_id, proposal_text, proposal_status, proposal_type, 0, 0];
-        let hints = ['uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'int', 'int'];
+        let queryColumns = 'INSERT INTO Proposals (community_id, user_id, proposal_id, proposal_text, proposal_status, proposal_type, age, created_at, updated_at';
+        let queryValues = 'VALUES (?, ?, ?, ?, ?, ?, ?, totimestamp(now()), totimestamp(now())';
+        let params = [community_id, user_id, proposal_id, proposal_text, proposal_status, proposal_type, 0];
+        let hints = ['uuid', 'uuid', 'uuid', 'text', 'text', 'text', 'int'];
         
         if (val_uuid) {
             queryColumns += ', val_uuid';
@@ -77,129 +64,102 @@ class Proposals {
     }
 
     static async findById(proposalId) {
-       const db = DBClient.getInstance();
+        const db = DBClient.getInstance();
+        console.log("bhdshhjwdhjhj",proposalId)
         const query = 'SELECT * FROM Proposals WHERE proposal_id = ?';
         const params = [proposalId];
+        console.log("param",query, params)
+        const result = await db.execute(query, params);
+        console.log("res",result)
+        return result.rows[0];
+    }
+
+    static async find(communityId, proposalStatus=null, proposalType=null) {
+        console.log("pp",communityId, proposalStatus, proposalType)
+        const db = DBClient.getInstance();
+
+    
+        let query = 'SELECT * FROM Proposals WHERE community_id = ?';
+        let params = [communityId];
+    
+        if (proposalStatus) {
+            query += ' AND proposal_status = ?';
+            params.push(proposalStatus);
+        }
+    
+        if (proposalType) {
+            query += ' AND proposal_type = ?';
+            params.push(proposalType);
+        }
+    
         const result = await db.execute(query, params);
         return result.rows;
     }
 
-    static async find(communityId, proposalStatus = null, proposalType = null) {
-     const db = DBClient.getInstance();
-  
-      let query = 'SELECT * FROM Proposals WHERE community_id = ?';
-      let params = [communityId];
-  
-      if (proposalStatus) {
-          query += ' AND proposal_status = ?';
-          params.push(proposalStatus);
-      }
-  
-      if (proposalType) {
-          query += ' AND proposal_type = ?';
-          params.push(proposalType);
-      }
-  
-      const result = await db.execute(query, params);
-      return result.rows;
-  }
-
     static async findProposalsByPulse(pulseId) {
-       const db = DBClient.getInstance();
+        const db = DBClient.getInstance();
         const query = 'SELECT * FROM Proposals WHERE pulse_id = ?';
         const params = [pulseId];
         const result = await db.execute(query, params);
         return result.rows;
     }
 
-    static async findByType(proposalType) {
-       const db = DBClient.getInstance();
-        const query = 'SELECT * FROM Proposals WHERE proposal_type = ?';
-        const params = [proposalType];
+    static async findByStatus(community_id, proposal_status) {
+        console.log("_+_+_+_+",proposal_status)
+        if (!PROPOSAL_STATUS_ENUM.includes(proposal_status)) {
+            throw new Error(`Invalid proposal_status: ${proposal_status}`);
+        }
+        console.log("_+_+_+_+",2)
+        const db = DBClient.getInstance();
+        const query = "SELECT * FROM Proposals WHERE community_id = ? and proposal_status = '?' ALLOW FILTERING";
+        const params = [community_id, proposal_status];
+        console.log("poipoi", query, params)
         const result = await db.execute(query, params);
         return result.rows;
     }
 
 
     static async UpdateStatus(proposalId, direction) {
-       const db = DBClient.getInstance();
-        
-    
+        const db = DBClient.getInstance();
+        console.log("pp",proposalId, this.findById)
         const proposal = await this.findById(proposalId);
-        if (!proposal || proposal.length === 0) {
+        console.log("proposal", proposal)
+        if (!proposal) {
             throw new Error(`Proposal with id ${proposalId} not found`);
         }
-
-        const currentIndex = PROPOSAL_STATUS_LIFECYCLE.indexOf(proposal[0].proposal_status);
+        console.log("proposal", proposal)
+        const currentIndex = PROPOSAL_STATUS_LIFECYCLE.indexOf(proposal.proposal_status);
 
         if (currentIndex === -1 || currentIndex === PROPOSAL_STATUS_LIFECYCLE.length - 1) {
-            throw new Error(`Cannot update proposal with status ${proposal[0].proposal_status}`);
+            throw new Error(`Cannot update proposal with status ${proposal.proposal_status}`);
         }
-
+        console.log("p2",proposal.proposal_status, currentIndex)
         let newStatus;
         if (direction) {
             newStatus = PROPOSAL_STATUS_LIFECYCLE[currentIndex + 1];
         } else {
             newStatus = currentIndex === 2 ? 'Rejected' : 'Canceled';
         }
-
-        const query = 'UPDATE Proposals SET proposal_status = ? WHERE proposal_id = ?';
-        const params = [newStatus, proposalId];
+        console.log("p3",newStatus)
+        const query = 'UPDATE Proposals SET proposal_status = ? WHERE proposal_id = ? and community_id = ?';
+        const params = [newStatus, proposalId, proposal.community_id];
         await db.execute(query, params);
     }
-
-    static async countVotes(proposalId) {
-        if (!proposalId) {
-            return null;
-        }
-    
-       const db = DBClient.getInstance();
-        const query = 'SELECT vote, COUNT(*) as count FROM Votes WHERE proposal_id = ? GROUP BY vote';
-        const params = [proposalId];
-    
-        const result = await db.execute(query, params);
-    
-        let counts = {};
-        result.rows.forEach(row => {
-            counts[row.vote] = row.count;
-        });
-    
-        return counts;
-    }    
-
-
-    static async countSupport(proposalId) {
-        if (!proposalId) {
-            return null;
-        }
-    
-       const db = DBClient.getInstance();
-        const query = 'SELECT support, COUNT(*) as count FROM Support WHERE proposal_tpe = ? GROUP BY support';
-        const params = [proposalId];
-    
-        const result = await db.execute(query, params);
-    
-        let counts = {};
-        result.rows.forEach(row => {
-            counts[row.support] = row.count;
-        });
-    
-        return counts;
-    } 
 
 
     static async executeProposal(proposal_id) {
        const db = DBClient.getInstance();
-
+        console.log("zxc", proposal_id)
         // Fetch the proposal
         const query = 'SELECT * FROM Proposals WHERE proposal_id = ?';
         const params = [proposal_id];
         const result = await db.execute(query, params);
         const proposal = result.rows[0];
-
-        switch(proposal.type) {
+        console.log("zxc", proposal.proposal_type)
+        switch(proposal.proposal_type) {
             case 'Membership':
-                return await createMemeber(proposal.community_id, proposal.user_id);
+                console.log("ppppp321321")
+                return await createMember(proposal.community_id, proposal.user_id);
             case 'ThrowOut':
                 return await throwOut(proposal.community_id, proposal.val_uuid);
             case 'AddStatement':

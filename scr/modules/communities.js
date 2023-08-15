@@ -229,33 +229,6 @@ class Communities {
     }
     */
 
-    static async updateSupport(community_id) {
-        if (!community_id) {
-            return null;
-        }
-    
-        const db = DBClient.getInstance();
-
-        // Fetch all 'OutThere' proposals of the community
-        const outThereProposalsQuery = 'SELECT proposal_id FROM Proposals WHERE community_id = ? AND proposal_status = ?';
-        const outThereProposalsParams = [community_id, 'OutThere'];
-        const outThereProposals = await db.execute(outThereProposalsQuery, outThereProposalsParams);
-
-        // For each 'OutThere' proposal, count the support and update the proposal_support field
-        for (let proposal of outThereProposals.rows) {
-            const proposalId = proposal.proposal_id;
-
-            const supportCountQuery = 'SELECT COUNT(*) as count FROM Support WHERE proposal_id = ? AND support = 1';
-            const supportCountParams = [proposalId];
-            const result = await db.execute(supportCountQuery, supportCountParams);
-
-            const supportCount = result.rows[0].count;
-
-            const updateSupportQuery = 'UPDATE Proposals SET proposal_support = ? WHERE proposal_id = ?';
-            const updateSupportParams = [supportCount, proposalId];
-            await db.execute(updateSupportQuery, updateSupportParams);
-        }
-    }
 
     static async incrementAge(community_id) {
         const db = DBClient.getInstance();

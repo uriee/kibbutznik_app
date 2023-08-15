@@ -50,31 +50,27 @@ CREATE TABLE IF NOT EXISTS Users (
     PRIMARY KEY(user_id)
 );
 
-CREATE TABLE IF NOT EXISTS Proposals (
+CREATE TABLE  Proposals (
     community_id uuid,
     user_id uuid,
     proposal_id uuid,
     proposal_text text,
     proposal_status text,
     proposal_type text,
-    proposal_support int,
     pulse_id uuid,
-    val_uuid uuid,
-    val_text text,
     age int,
     created_at timestamp,
     updated_at timestamp,
+    val_uuid uuid,
+    val_text text,
     PRIMARY KEY (community_id, proposal_id)
 );
 
-
-CREATE TABLE IF NOT EXISTS Support (
-    user_id uuid,
-    proposal_id uuid,
-    support int,
-    PRIMARY KEY (user_id, proposal_id)
+CREATE TABLE IF NOT EXISTS proposal_counters (
+    proposal_id uuid PRIMARY KEY,
+    proposal_support counter,
+    proposal_vote counter
 );
-
 
 CREATE TABLE IF NOT EXISTS Membership_Payment (
     payment_id uuid,
@@ -94,13 +90,19 @@ CREATE TABLE IF NOT EXISTS Payment (
 );
 
 
-CREATE TABLE IF NOT EXISTS Votes (
+CREATE TABLE IF NOT EXISTS UserVotes (
     user_id uuid,
     proposal_id uuid,
-    vote int,
+    created_at timestamp,
     PRIMARY KEY (user_id, proposal_id)
 );
 
+CREATE TABLE IF NOT EXISTS UserSupport (
+    user_id uuid,
+    proposal_id uuid,
+    created_at timestamp, 
+    PRIMARY KEY (user_id, proposal_id)
+);
 
 CREATE TABLE IF NOT EXISTS Closeness_Records (
     user_id1 uuid,
