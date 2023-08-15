@@ -52,7 +52,6 @@ class Members {
     static async create(community_id, user_id) {
         const db = DBClient.getInstance();
         console.log("user_id, community_id", user_id.toString(), community_id);
-    
         // Try to update first
         const updateQuery = `UPDATE members SET status = 1 WHERE community_id = ${community_id.toString()} AND user_id = ${user_id.toString()}`;
         const updateParams = [1, community_id.toString(), user_id.toString()];

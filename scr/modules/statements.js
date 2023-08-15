@@ -8,15 +8,18 @@ CREATE TABLE IF NOT EXISTS Statements (
 );
 */
 const DBClient = require('../utils/localDB.js');
+const uuid = require('uuid');
 
 class Statements {
     
     static async create(community_id , statement_text) {
+        console.log("community_id , statement_text", community_id , statement_text)
         const db = DBClient.getInstance();
         const statement_id = uuid.v4();
-        const query = 'INSERT INTO Statements (community_id, statement_id, status, statement_text) VALUES (?, ?, ?)';
+        const query = 'INSERT INTO Statements (community_id, statement_id, status, statement_text) VALUES (?, ?, ?, ?)';
         const params = [community_id, statement_id, 1, statement_text];
-        await db.execute(query, params,{ hints : ['uuid', 'int', 'text']});
+        console.log(query, params)
+        await db.execute(query, params,{ hints : ['uuid', 'uuid', 'int', 'text']});
     }
 
     static async removeStatement(statement_id) {

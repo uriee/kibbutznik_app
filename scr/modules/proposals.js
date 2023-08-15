@@ -158,12 +158,12 @@ class Proposals {
         console.log("zxc", proposal.proposal_type)
         switch(proposal.proposal_type) {
             case 'Membership':
-                console.log("ppppp321321")
+                console.log("ppppp321321",proposal)
                 return await createMember(proposal.community_id, proposal.user_id);
             case 'ThrowOut':
                 return await throwOut(proposal.community_id, proposal.val_uuid);
             case 'AddStatement':
-                return await createStatement(proposal.community_id,proposal.val_text);
+                return await createStatement(proposal.community_id,proposal.proposal_text);
             case 'RemoveStatement':
                 return await removeStatement(proposal.community_id, proposal.val_uuid);
             case 'ReplaceStatement':

@@ -209,5 +209,3 @@ describe('API Tests', () => {
   });
 
 });
-
-newStatement1
