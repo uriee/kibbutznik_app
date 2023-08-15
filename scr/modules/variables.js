@@ -35,10 +35,10 @@ class Variables {
 
     static async updateVariableValue(communityId, variableType, newValue) {
        const db = DBClient.getInstance();
-        const query = 'UPDATE Variables SET variable_value = ? WHERE community_id = ? AND variable_type = ?';
+        const query = `UPDATE Variables SET variable_value = '${newValue}' WHERE community_id = ${communityId} AND variable_type = '${variableType}'`;
         const params = [newValue, communityId, variableType];
-
-        await db.execute(query, params);
+        console.log(query)
+        await db.execute(query);
     }
 
 

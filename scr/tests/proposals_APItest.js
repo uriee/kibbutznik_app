@@ -27,22 +27,20 @@ describe('API Tests', () => {
 
   it('Create a new community with member called "TastyTest" using FirstMember', (done) => {
 
-    setTimeout(() => { 
-        const newCommunity = {
-            parent_community_id: '00000000-0000-0000-0000-000000000000',
-            name: 'TastyTest',
-            user_id: FirstMember,
-          };
-        console.log(newCommunity)
-        chai.request(server)
-        .post('/communities/createWithUser')
-        .send(newCommunity)
-        .end((err, res) => {
-            communityId = res.body.community_id;
-            expect(res).to.have.status(201);
-            done();
-        });
-    },150)
+      const newCommunity = {
+          parent_community_id: '00000000-0000-0000-0000-000000000000',
+          name: 'TastyTest',
+          user_id: FirstMember,
+        };
+      console.log(newCommunity)
+      chai.request(server)
+      .post('/communities/createWithUser')
+      .send(newCommunity)
+      .end((err, res) => {
+          communityId = res.body.community_id;
+          expect(res).to.have.status(201);
+          done();
+      });
   });
 
   
@@ -100,7 +98,7 @@ describe('API Tests', () => {
     
   });
 
-  it('Create a proposal to change the community variable variable_type = "MinCommittee" to 1', (done) => {
+  it('Create a proposal to change the community variable variable_type = "MinCommittee" to 217', (done) => {
     setTimeout(() => { 
         chai.request(server)
         .post('/proposals')
@@ -109,7 +107,7 @@ describe('API Tests', () => {
             user_id: FirstMember,
             proposal_type: 'ChangeVariable',
             proposal_text: 'MinCommittee',
-            val_text: 'uri'
+            val_text: '217'
         })
         .end((err, res) => {
             changeVariable1 = res.body.proposal_id
@@ -201,6 +199,17 @@ describe('API Tests', () => {
     setTimeout(() => {
         chai.request(server)
             .post(`/proposals/execute/${newStatement1}`)
+            .end((err, res) => {
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 900);
+  });
+
+  it('should execute a change variable proposal', (done) => {
+    setTimeout(() => {
+        chai.request(server)
+            .post(`/proposals/execute/${changeVariable1}`)
             .end((err, res) => {
                 expect(res).to.have.status(200);
                 done();
