@@ -8,7 +8,7 @@ const { create: createAction, endAction} = require('./communities.js');
 
 
 const PROPOSAL_STATUS_ENUM = ['Draft', 'OutThere', 'Canceled', 'OnTheAir', 'Accepted', 'Rejected'];
-const PROPOSAL_TYPE_ENUM = ['Membership', 'ThrowOut', 'AddStatement', 'RemoveStatement','replaceStatement', 'ChangeVariable',
+const PROPOSAL_TYPE_ENUM = ['Membership', 'ThrowOut', 'AddStatement', 'RemoveStatement','ReplaceStatement', 'ChangeVariable',
                             'AddAction', 'EndAction', 'JoinAction', 'Funding', 'Payment', 'payBack', 'Dividend'];
 const PROPOSAL_STATUS_LIFECYCLE = ['Draft', 'OutThere', 'OnTheAir', 'Accepted'];
 
@@ -151,10 +151,11 @@ class Proposals {
        const db = DBClient.getInstance();
         console.log("zxc", proposal_id)
         // Fetch the proposal
-        const query = 'SELECT * FROM Proposals WHERE proposal_id = ?';
-        const params = [proposal_id];
-        const result = await db.execute(query, params);
+        let query = 'SELECT * FROM Proposals WHERE proposal_id = ?';
+        let params = [proposal_id];
+        let result = await db.execute(query, params);
         const proposal = result.rows[0];
+        let ret = null;
         console.log("zxc", proposal.proposal_type)
         switch(proposal.proposal_type) {
             case 'Membership':
@@ -163,15 +164,15 @@ class Proposals {
             case 'ThrowOut':
                 return await throwOut(proposal.community_id, proposal.val_uuid);
             case 'AddStatement':
-                return await createStatement(proposal.community_id,proposal.proposal_text);
+                ret = await createStatement(proposal.community_id,proposal.proposal_text);
             case 'RemoveStatement':
-                return await removeStatement(proposal.community_id, proposal.val_uuid);
+                return await removeStatement(proposal.val_uuid);
             case 'ReplaceStatement':
                 return await replaceStatement(proposal.community_id, proposal.val_uuid, proposal.val_text);
             case 'ChangeVariable':
                 return await updateVariableValue(proposal.community_id, proposal.proposal_text, proposal.val_text);
             case 'AddAction':
-                return await createAction(proposal.val_text, proposal.community_id);
+                ret =  await createAction(proposal.val_text, proposal.community_id);
             case 'EndAction':
                 return await endAction(proposal.community_id);
             case 'JoinAction':
@@ -183,10 +184,14 @@ class Proposals {
                 return await pay(proposal.community_id, proposal.val_text);
                 */
             default:
+                if (ret){
+
+                    query = `UPDATE Proposals SET val_uuid = ${ret} WHERE proposal_id = ${proposal_id}`;
+                    return await db.execute(query);
+                }
                 throw new Error("Invalid proposal type");
         }
     }
-
 }
 
 module.exports = Proposals;

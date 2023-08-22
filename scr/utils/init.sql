@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS Statements (
     community_id uuid,
     statement_id uuid,
+    prev_statement_id uuid,
     status int, 
     statement_text text,
     PRIMARY KEY (community_id, statement_id)

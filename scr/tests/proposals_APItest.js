@@ -8,7 +8,7 @@ const expect = chai.expect;
 
 describe('API Tests', () => {
   let FirstMember, AnotherMember1, AnotherMember2;
-  let membership1, membership2, changeVariable1, newStatement1
+  let membership1, membership2, changeVariable1, newStatement1, removeStatement1 , replaceStatement1 
   let communityId;
 
   it('Create FirstMember user', (done) => {
@@ -134,8 +134,29 @@ describe('API Tests', () => {
             expect(res).to.have.status(201);
             done();
         });
-    },600)
+    },800)
   });
+
+  it('Create a proposal to remove a statement', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/proposals')
+        .send({
+            community_id: communityId,
+            val_uuid: newStatement1,
+            user_id: FirstMember,
+            proposal_type: 'RemoveStatement',
+            proposal_text: 'Remove statement now!!',
+        })
+        .end((err, res) => {
+            removeStatement1 = res.body.proposal_id
+            console.log("q5:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },900)
+  });
+
 
   it('should update proposal status', (done) => {
     setTimeout(() => {
@@ -146,7 +167,7 @@ describe('API Tests', () => {
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 900);
+    }, 1000);
 });
 
   it('should find a proposal by id', (done) => {
@@ -157,7 +178,7 @@ describe('API Tests', () => {
                   expect(res).to.have.status(200);
                   done();
               });
-      }, 900);
+      }, 1000);
   });
 
   // Testing Get all proposals route
@@ -170,7 +191,7 @@ describe('API Tests', () => {
                   expect(res).to.have.status(200);
                   done();
               });
-      }, 900);
+      }, 1000);
   });
 
   it('should find proposals by pulse', (done) => {
@@ -181,7 +202,7 @@ describe('API Tests', () => {
                   expect(res).to.have.status(200);
                   done();
               });
-      }, 900);
+      }, 1000);
   });
 
   it('should execute a Membership proposal', (done) => {
@@ -192,7 +213,7 @@ describe('API Tests', () => {
                   expect(res).to.have.status(200);
                   done();
               });
-      }, 900);
+      }, 1000);
   });
 
   it('should execute a new Statement proposal', (done) => {
@@ -203,9 +224,40 @@ describe('API Tests', () => {
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 900);
+    }, 1000);
   });
 
+  it('should execute a remove Statement proposal', (done) => {
+    setTimeout(() => {
+        chai.request(server)
+            .post(`/proposals/execute/${removeStatement1}`)
+            .end((err, res) => {
+                console.log("RES:",res.body)
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 1100);
+  });
+/*
+  it('Create a proposal to re ove a statement', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/proposals')
+        .send({
+            val_uuid: ,
+            user_id: FirstMember,
+            proposal_type: 'RemoveStatement',
+            proposal_text: 'remove it!!',
+        })
+        .end((err, res) => {
+            newStatement1 = res.body.proposal_id
+            console.log("q4:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },1200)
+  });
+*/
   it('should execute a change variable proposal', (done) => {
     setTimeout(() => {
         chai.request(server)

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS Members (
 const DBClient = require('../utils/localDB.js');
 
 class Members {
-    static async find(userId, community_id) {
+    static async find(userId, community_id, proposal_id) {
        const db = DBClient.getInstance();
         let query, params;
 
