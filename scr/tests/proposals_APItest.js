@@ -227,7 +227,28 @@ describe('API Tests', () => {
     }, 1000);
   });
 
+  it('Create a proposal to remove a statement', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/proposals')
+        .send({
+            community_id: communityId,
+            user_id: FirstMember,
+            val_uuid: newStatement1, 
+            proposal_type: 'RemoveStatement',
+            proposal_text: 'remove it!!',
+        })
+        .end((err, res) => {
+            removeStatement1 = res.body.proposal_id
+            console.log("q4:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },1200)
+  });
+
   it('should execute a remove Statement proposal', (done) => {
+    console.log("asdf", removeStatement1)
     setTimeout(() => {
         chai.request(server)
             .post(`/proposals/execute/${removeStatement1}`)
@@ -236,28 +257,9 @@ describe('API Tests', () => {
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 1100);
+    }, 1400);
   });
-/*
-  it('Create a proposal to re ove a statement', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .post('/proposals')
-        .send({
-            val_uuid: ,
-            user_id: FirstMember,
-            proposal_type: 'RemoveStatement',
-            proposal_text: 'remove it!!',
-        })
-        .end((err, res) => {
-            newStatement1 = res.body.proposal_id
-            console.log("q4:", res.status, res.body)
-            expect(res).to.have.status(201);
-            done();
-        });
-    },1200)
-  });
-*/
+
   it('should execute a change variable proposal', (done) => {
     setTimeout(() => {
         chai.request(server)

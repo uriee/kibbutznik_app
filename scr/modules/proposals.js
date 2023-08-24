@@ -156,7 +156,7 @@ class Proposals {
         let result = await db.execute(query, params);
         const proposal = result.rows[0];
         let ret = null;
-        console.log("zxc", proposal.proposal_type)
+        console.log("zxc", proposal)
         switch(proposal.proposal_type) {
             case 'Membership':
                 console.log("ppppp321321",proposal)
@@ -165,14 +165,24 @@ class Proposals {
                 return await throwOut(proposal.community_id, proposal.val_uuid);
             case 'AddStatement':
                 ret = await createStatement(proposal.community_id,proposal.proposal_text);
+                if (ret){
+                    query = `UPDATE Proposals SET val_uuid = ${ret} WHERE proposal_id = ${proposal_id}`;
+                    return await db.execute(query);
+                }
+                return null;
             case 'RemoveStatement':
-                return await removeStatement(proposal.val_uuid);
+                return await removeStatement(proposal.community_id, proposal.val_uuid);
             case 'ReplaceStatement':
                 return await replaceStatement(proposal.community_id, proposal.val_uuid, proposal.val_text);
             case 'ChangeVariable':
                 return await updateVariableValue(proposal.community_id, proposal.proposal_text, proposal.val_text);
             case 'AddAction':
                 ret =  await createAction(proposal.val_text, proposal.community_id);
+                if (ret){
+                    query = `UPDATE Proposals SET val_uuid = ${ret} WHERE proposal_id = ${proposal_id}`;
+                    return await db.execute(query);
+                }
+                return null;
             case 'EndAction':
                 return await endAction(proposal.community_id);
             case 'JoinAction':
@@ -184,11 +194,6 @@ class Proposals {
                 return await pay(proposal.community_id, proposal.val_text);
                 */
             default:
-                if (ret){
-
-                    query = `UPDATE Proposals SET val_uuid = ${ret} WHERE proposal_id = ${proposal_id}`;
-                    return await db.execute(query);
-                }
                 throw new Error("Invalid proposal type");
         }
     }

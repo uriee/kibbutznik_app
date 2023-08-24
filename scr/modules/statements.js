@@ -12,25 +12,26 @@ const uuid = require('uuid');
 
 class Statements {
     
-    static async create(community_id , statement_text) {
+    static async create(community_id , statement_text, prev_statement_id = null) {
         console.log("community_id , statement_text", community_id , statement_text)
         const db = DBClient.getInstance();
         const statement_id = uuid.v4();
-        const query = 'INSERT INTO Statements (community_id, statement_id, status, statement_text) VALUES (?, ?, ?, ?)';
-        const params = [community_id, statement_id, 1, statement_text];
-        console.log(query, params)
-        await db.execute(query, params,{ hints : ['uuid', 'uuid', 'int', 'text']});
+        const query = prev_statement_id ?
+            `INSERT INTO Statements (community_id, statement_id, status, statement_text, prev_statement_id) VALUES (${community_id}, ${statement_id}, 1, '${statement_text}', ${prev_statement_id})` :
+            `INSERT INTO Statements (community_id, statement_id, status, statement_text) VALUES (${community_id}, ${statement_id}, 1, '${statement_text}')`;
+        console.log(query)
+        await db.execute(query, { hints : ['uuid', 'uuid', 'int', 'text']});
     }
 
-    static async removeStatement(statement_id) {
+    static async removeStatement(community_id, statement_id) {
        const db = DBClient.getInstance();
-        const query = 'UPDATE Statements SET status = ? WHERE statement_id = ?';
-        const params = [2, statement_id]; // 2 is status for removed
-        await db.execute(query, params);
+        const query = `UPDATE Statements SET status = 2 WHERE community_id = ${community_id} and statement_id = ${statement_id}`;
+        console.log("choooooche",query)
+        await db.execute(query);
     }
 
-    static async replaceStatement(statement_id, statement) {
-        await this.removeStatement(statement_id)
+    static async replaceStatement(community_id, statement_id, statement) {
+        await this.removeStatement(community_id, statement_id)
         await this.create(statement)
     }
 
