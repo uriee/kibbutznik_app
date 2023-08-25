@@ -8,7 +8,7 @@ const expect = chai.expect;
 
 describe('API Tests', () => {
   let FirstMember, AnotherMember1, AnotherMember2;
-  let membership1, membership2, changeVariable1, newStatement1, removeStatement1 , replaceStatement1 
+  let membership1, membership2, changeVariable1, newStatement1, removeStatement1 , replaceStatement1 ,newStatement2
   let communityId;
 
   it('Create FirstMember user', (done) => {
@@ -137,6 +137,25 @@ describe('API Tests', () => {
     },800)
   });
 
+  it('Create a proposal to add a new statement', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/proposals')
+        .send({
+            community_id: communityId,
+            user_id: FirstMember,
+            proposal_type: 'AddStatement',
+            proposal_text: 'Add a Another new statement',
+        })
+        .end((err, res) => {
+            newStatement2 = res.body.proposal_id
+            console.log("q4:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },800)
+  });
+
   it('Create a proposal to remove a statement', (done) => {
     setTimeout(() => { 
     chai.request(server)
@@ -226,6 +245,16 @@ describe('API Tests', () => {
             });
     }, 1000);
   });
+  it('should execute a new Statement proposal', (done) => {
+    setTimeout(() => {
+        chai.request(server)
+            .post(`/proposals/execute/${newStatement2}`)
+            .end((err, res) => {
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 1000);
+  });
 
   it('Create a proposal to remove a statement', (done) => {
     setTimeout(() => { 
@@ -248,16 +277,49 @@ describe('API Tests', () => {
   });
 
   it('should execute a remove Statement proposal', (done) => {
-    console.log("asdf", removeStatement1)
     setTimeout(() => {
         chai.request(server)
             .post(`/proposals/execute/${removeStatement1}`)
+            .end((err, res) => {
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 1400);
+  });
+
+
+  it('Create a proposal to replace a statement', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/proposals')
+        .send({
+            community_id: communityId,
+            user_id: FirstMember,
+            val_uuid: newStatement2, 
+            val_text: "IM replaciiing YOuuu!!!!!",
+            proposal_type: 'ReplaceStatement',
+            proposal_text: 'IM replaciiing YOuuu??????',
+        })
+        .end((err, res) => {
+            replaceStatement1 = res.body.proposal_id
+            console.log("q4:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },1600)
+  });
+
+  it('should execute a replace Statement proposal', (done) => {
+    setTimeout(() => {
+        console.log("replaceStatement1", replaceStatement1)
+        chai.request(server)
+            .post(`/proposals/execute/${replaceStatement1}`)
             .end((err, res) => {
                 console.log("RES:",res.body)
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 1400);
+    }, 1700);
   });
 
   it('should execute a change variable proposal', (done) => {

@@ -159,7 +159,6 @@ class Proposals {
         console.log("zxc", proposal)
         switch(proposal.proposal_type) {
             case 'Membership':
-                console.log("ppppp321321",proposal)
                 return await createMember(proposal.community_id, proposal.user_id);
             case 'ThrowOut':
                 return await throwOut(proposal.community_id, proposal.val_uuid);
@@ -169,10 +168,12 @@ class Proposals {
                     query = `UPDATE Proposals SET val_uuid = ${ret} WHERE proposal_id = ${proposal_id}`;
                     return await db.execute(query);
                 }
+                console.log("\nYYYYY\n")
                 return null;
             case 'RemoveStatement':
                 return await removeStatement(proposal.community_id, proposal.val_uuid);
             case 'ReplaceStatement':
+                console.log("ppppp321321",proposal)
                 return await replaceStatement(proposal.community_id, proposal.val_uuid, proposal.val_text);
             case 'ChangeVariable':
                 return await updateVariableValue(proposal.community_id, proposal.proposal_text, proposal.val_text);

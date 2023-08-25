@@ -20,19 +20,25 @@ class Statements {
             `INSERT INTO Statements (community_id, statement_id, status, statement_text, prev_statement_id) VALUES (${community_id}, ${statement_id}, 1, '${statement_text}', ${prev_statement_id})` :
             `INSERT INTO Statements (community_id, statement_id, status, statement_text) VALUES (${community_id}, ${statement_id}, 1, '${statement_text}')`;
         console.log(query)
-        await db.execute(query, { hints : ['uuid', 'uuid', 'int', 'text']});
+        let statement= await db.execute(query, { hints : ['uuid', 'uuid', 'int', 'text']});
+        return statement.id
     }
 
     static async removeStatement(community_id, statement_id) {
-       const db = DBClient.getInstance();
+        console.log("SAYSAYSAYSYA WHAYT")
+        const db = DBClient.getInstance();
         const query = `UPDATE Statements SET status = 2 WHERE community_id = ${community_id} and statement_id = ${statement_id}`;
         console.log("choooooche",query)
-        await db.execute(query);
+        return await db.execute(query);
     }
 
     static async replaceStatement(community_id, statement_id, statement) {
-        await this.removeStatement(community_id, statement_id)
-        await this.create(statement)
+        console.log("______________________1",community_id, statement_id, statement)
+        let ret = await Statements.removeStatement(community_id, statement_id)
+        console.log("______________________2",ret)
+        ret = ret && await Statements.create(community_id, statement, statement_id)
+        console.log("______________________3",ret)
+        return ret;
     }
 
     static async findByCommunityId(communityId, statementId = null, status = null, statementText = null) {
