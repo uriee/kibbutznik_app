@@ -4,7 +4,7 @@ const DBClient = require('../utils/localDB.js');
 const { create: createMember, throwOut } = require('./members.js');
 const { create: createStatement, removeStatement, replaceStatement } = require('./statements.js');
 const { updateVariableValue } = require('./variables.js');
-const { create: createAction, endAction} = require('./communities.js');
+const { create: createAction, endAction} = require('./actions.js');
 
 
 const PROPOSAL_STATUS_ENUM = ['Draft', 'OutThere', 'Canceled', 'OnTheAir', 'Accepted', 'Rejected'];
@@ -168,7 +168,6 @@ class Proposals {
                     query = `UPDATE Proposals SET val_uuid = ${ret} WHERE proposal_id = ${proposal_id}`;
                     return await db.execute(query);
                 }
-                console.log("\nYYYYY\n")
                 return null;
             case 'RemoveStatement':
                 return await removeStatement(proposal.community_id, proposal.val_uuid);
@@ -178,9 +177,11 @@ class Proposals {
             case 'ChangeVariable':
                 return await updateVariableValue(proposal.community_id, proposal.proposal_text, proposal.val_text);
             case 'AddAction':
-                ret =  await createAction(proposal.val_text, proposal.community_id);
+                console.log("\nxxxxxxx\n",createAction)
+                ret =  await createAction(proposal.community_id, proposal.val_text);
                 if (ret){
-                    query = `UPDATE Proposals SET val_uuid = ${ret} WHERE proposal_id = ${proposal_id}`;
+                    query = `UPDATE Proposals SET val_uuid = ${ret} WHERE community_id = ${proposal.community_id} and proposal_id = ${proposal_id}`;
+                    console.log(ret, query)
                     return await db.execute(query);
                 }
                 return null;

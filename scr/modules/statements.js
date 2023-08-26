@@ -2,10 +2,13 @@
 /* 
 CREATE TABLE IF NOT EXISTS Statements (
     community_id uuid,
-    statement_id uuid PRIMARY KEY,
+    statement_id uuid,
+    prev_statement_id uuid,
     status int, 
     statement_text text,
+    PRIMARY KEY (community_id, statement_id)
 );
+
 */
 const DBClient = require('../utils/localDB.js');
 const uuid = require('uuid');
@@ -13,31 +16,24 @@ const uuid = require('uuid');
 class Statements {
     
     static async create(community_id , statement_text, prev_statement_id = null) {
-        console.log("community_id , statement_text", community_id , statement_text)
         const db = DBClient.getInstance();
         const statement_id = uuid.v4();
         const query = prev_statement_id ?
             `INSERT INTO Statements (community_id, statement_id, status, statement_text, prev_statement_id) VALUES (${community_id}, ${statement_id}, 1, '${statement_text}', ${prev_statement_id})` :
             `INSERT INTO Statements (community_id, statement_id, status, statement_text) VALUES (${community_id}, ${statement_id}, 1, '${statement_text}')`;
-        console.log(query)
         let statement= await db.execute(query, { hints : ['uuid', 'uuid', 'int', 'text']});
         return statement.id
     }
 
     static async removeStatement(community_id, statement_id) {
-        console.log("SAYSAYSAYSYA WHAYT")
         const db = DBClient.getInstance();
         const query = `UPDATE Statements SET status = 2 WHERE community_id = ${community_id} and statement_id = ${statement_id}`;
-        console.log("choooooche",query)
         return await db.execute(query);
     }
 
     static async replaceStatement(community_id, statement_id, statement) {
-        console.log("______________________1",community_id, statement_id, statement)
         let ret = await Statements.removeStatement(community_id, statement_id)
-        console.log("______________________2",ret)
         ret = ret && await Statements.create(community_id, statement, statement_id)
-        console.log("______________________3",ret)
         return ret;
     }
 

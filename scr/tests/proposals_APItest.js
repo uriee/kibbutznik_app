@@ -8,7 +8,7 @@ const expect = chai.expect;
 
 describe('API Tests', () => {
   let FirstMember, AnotherMember1, AnotherMember2;
-  let membership1, membership2, changeVariable1, newStatement1, removeStatement1 , replaceStatement1 ,newStatement2
+  let membership1, membership2, changeVariable1, newStatement1, removeStatement1 , replaceStatement1 ,newStatement2, newAction1
   let communityId;
 
   it('Create FirstMember user', (done) => {
@@ -93,7 +93,7 @@ describe('API Tests', () => {
                 done();
             });
         });
-    },700)
+    },200)
 
     
   });
@@ -115,7 +115,7 @@ describe('API Tests', () => {
             expect(res).to.have.status(201);
             done();
         });
-    },700)
+    },200)
   });
 
   it('Create a proposal to add a new statement', (done) => {
@@ -134,7 +134,7 @@ describe('API Tests', () => {
             expect(res).to.have.status(201);
             done();
         });
-    },800)
+    },200)
   });
 
   it('Create a proposal to add a new statement', (done) => {
@@ -153,7 +153,7 @@ describe('API Tests', () => {
             expect(res).to.have.status(201);
             done();
         });
-    },800)
+    },200)
   });
 
   it('Create a proposal to remove a statement', (done) => {
@@ -173,7 +173,7 @@ describe('API Tests', () => {
             expect(res).to.have.status(201);
             done();
         });
-    },900)
+    },200)
   });
 
 
@@ -186,7 +186,7 @@ describe('API Tests', () => {
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 1000);
+    }, 200);
 });
 
   it('should find a proposal by id', (done) => {
@@ -197,7 +197,7 @@ describe('API Tests', () => {
                   expect(res).to.have.status(200);
                   done();
               });
-      }, 1000);
+      }, 200);
   });
 
   // Testing Get all proposals route
@@ -210,7 +210,7 @@ describe('API Tests', () => {
                   expect(res).to.have.status(200);
                   done();
               });
-      }, 1000);
+      }, 200);
   });
 
   it('should find proposals by pulse', (done) => {
@@ -221,7 +221,7 @@ describe('API Tests', () => {
                   expect(res).to.have.status(200);
                   done();
               });
-      }, 1000);
+      }, 200);
   });
 
   it('should execute a Membership proposal', (done) => {
@@ -232,7 +232,7 @@ describe('API Tests', () => {
                   expect(res).to.have.status(200);
                   done();
               });
-      }, 1000);
+      }, 200);
   });
 
   it('should execute a new Statement proposal', (done) => {
@@ -243,7 +243,7 @@ describe('API Tests', () => {
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 1000);
+    }, 200);
   });
   it('should execute a new Statement proposal', (done) => {
     setTimeout(() => {
@@ -253,7 +253,7 @@ describe('API Tests', () => {
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 1000);
+    }, 200);
   });
 
   it('Create a proposal to remove a statement', (done) => {
@@ -273,7 +273,7 @@ describe('API Tests', () => {
             expect(res).to.have.status(201);
             done();
         });
-    },1200)
+    }, 200)
   });
 
   it('should execute a remove Statement proposal', (done) => {
@@ -284,7 +284,7 @@ describe('API Tests', () => {
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 1400);
+    }, 200);
   });
 
 
@@ -306,7 +306,7 @@ describe('API Tests', () => {
             expect(res).to.have.status(201);
             done();
         });
-    },1600)
+    },200)
   });
 
   it('should execute a replace Statement proposal', (done) => {
@@ -319,7 +319,7 @@ describe('API Tests', () => {
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 1700);
+    }, 200);
   });
 
   it('should execute a change variable proposal', (done) => {
@@ -330,7 +330,38 @@ describe('API Tests', () => {
                 expect(res).to.have.status(200);
                 done();
             });
-    }, 900);
+    }, 200);
+  });
+
+  it('Create a proposal for a new action', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/proposals')
+        .send({
+            community_id: communityId, 
+            user_id: AnotherMember1,
+            val_text: "newCom",
+            proposal_type: 'AddAction',
+            proposal_text: 'simple proposal text',
+        })
+        .end((err, res) => {
+            newAction1 = res.body.proposal_id
+            console.log("q7:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },200)
+  });
+
+  it('should execute a new action proposal', (done) => {
+    setTimeout(() => {
+        chai.request(server)
+            .post(`/proposals/execute/${newAction1}`)
+            .end((err, res) => {
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 200);
   });
 
 });

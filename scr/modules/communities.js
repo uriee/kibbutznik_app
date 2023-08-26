@@ -17,19 +17,6 @@ class Communities {
         return result.rows.length > 0 ? result.rows[0] : null;
     }
 
-    static async create(parent_community_id, name) {
-        const db = DBClient.getInstance();
-
-        // Generate a new UUID for the community_id
-        const community_id = await uuid.v4();
-        const query = 'INSERT INTO Communities (community_id, parent_community_id, status) VALUES (?, ?, ?)';
-        const params = [community_id, parent_community_id, 1];
-        await db.execute(query, params, { hints : ['uuid','uuid', 'int']});
-        await this.copyVariables(community_id);
-        await this.setName(community_id, name);
-        return community_id;
-    }
-
     static async createWithUser(parent_community_id, name, user_id) {
         const db = DBClient.getInstance();
 
@@ -52,14 +39,6 @@ class Communities {
 
         return community_id;
     }
-
-    static async endAction(communityId) {
-        const db = DBClient.getInstance();
-        const query = 'UPDATE Communities SET status = 2 WHERE community_id = ?';
-        const params = [ communityId ];
-        await db.execute(query, params);
-    }
-
     
     static async getParentsTree(communityId) {
         let community = await this.findById(communityId);
@@ -249,7 +228,8 @@ class Communities {
             
             for (const [proposal_id, isAccepted] of Object.entries(proposals)) {
                 if (isAccepted) {
-                    await executeProposal(proposal_id);
+                    console.log("1234567890",Communities.create )
+                    await executeProposal(proposal_id, Communities.create, Communities.endAction);
                     await UpdateStatus(proposal_id, true);  
                 } else {
                     await UpdateStatus(proposal_id, false); 
