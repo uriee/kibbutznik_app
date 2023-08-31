@@ -10,22 +10,63 @@ CREATE TABLE IF NOT EXISTS Support (
 const DBClient = require('../utils/localDB.js');
 
 class Support {
+
     static async create(user_id, proposal_id, support) {
-       const db = DBClient.getInstance();
-        // assuming `support` is an object with fields: user_id, proposal_id, support
-        const query = 'INSERT INTO Support (user_id, proposal_id, support) VALUES (?, ?, ?)';
-        const params = [user_id, proposal_id, support];
-        await db.execute(query, params, { hints : ['uuid', 'uuid', 'int']});
+        const db = DBClient.getInstance();
+        let ret = null
+        const checkQuery = 'SELECT * FROM Support WHERE user_id = ? AND proposal_id = ?';
+        const checkParams = [user_id, proposal_id];
+        const checkResult = await db.execute(checkQuery, checkParams);
+        
+        if (checkResult.rows.length > 0) {
+            throw new Error('Support row already exists.');
+        }
+        
+        const supportQuery = `INSERT INTO Support (user_id, proposal_id, support) VALUES (${user_id}, ${proposal_id}, ${support})`;
+        try {
+            ret = await db.execute(supportQuery);
+        } catch (err) {
+            console.error('Error executing Support Insert:', err);
+            return null;
+        }
+
+        const counterQuery = `UPDATE proposal_counters SET proposal_support = proposal_support + 1 WHERE proposal_id = ${proposal_id}`;
+        try {
+            await db.execute(counterQuery);
+        } catch (err) {
+            console.error('Error executing Counter Update:', err);
+            return null;
+        }
+    }    
+
+    static async delete(user_id, proposal_id) {
+        const db = DBClient.getInstance();
+    
+        const checkQuery = 'SELECT * FROM Support WHERE user_id = ? AND proposal_id = ?';
+        const checkParams = [user_id, proposal_id];
+        const checkResult = await db.execute(checkQuery, checkParams);
+        
+        if (checkResult.rows.length <= 0) {
+            throw new Error('Support row do not exists.');
+        }
+
+        const supportQuery = `DELETE FROM Support where user_id = ${user_id} and proposal_id = ${proposal_id}`;
+        try {
+            await db.execute(supportQuery);
+        } catch (err) {
+            console.error('Error executing Support Delete:', err);
+            return null;
+        }
+        const counterQuery = `UPDATE proposal_counters SET proposal_support = proposal_support - 1 WHERE proposal_id = ${proposal_id}`;
+        try {
+            await db.execute(counterQuery);
+        } catch (err) {
+            console.error('Error executing Counter Update:', err);
+            return null;
+        }
     }
 
-    static async delete(userId, proposalId) {
-       const db = DBClient.getInstance();
-        const query = 'DELETE FROM Support WHERE user_id = ? AND proposal_id = ?';
-        const params = [userId, proposalId];
-        await db.execute(query, params);
-    }
-
-    static async findByProposalIdAndUserId(proposalId, userId) {
+    static async find(userId, proposalId) {
         if (!userId && !proposalId) {
             return null;
         }
@@ -36,37 +77,30 @@ class Support {
         let conditions = [];
 
         if (userId) {
-            conditions.push('user_id = ?');
-            params.push(userId);
+            conditions.push(`user_id = ${userId}`);
         }
         if (proposalId) {
-            conditions.push('proposal_id = ?');
-            params.push(proposalId);
+            conditions.push(`proposal_id = ${proposalId}`);
         }
 
         query += ' ' + conditions.join(' AND ');
-
-        const result = await db.execute(query, params);
+        console.log(query)
+        const result = await db.execute(query);
         return result.rows;
     }
 
-    static async countSupport(proposalId) {
+    static async get_count(proposalId) {
         if (!proposalId) {
             return null;
         }
     
        const db = DBClient.getInstance();
-        const query = 'SELECT support, COUNT(*) as count FROM Support WHERE proposal_id = ? GROUP BY support';
-        const params = [proposalId];
+        const query = `SELECT proposal_support FROM proposal_counters WHERE proposal_id = ${proposalId}`;
+        console.log(query)
+        const result = await db.execute(query);
+        console.log(result.rows[0].proposal_support)
     
-        const result = await db.execute(query, params);
-    
-        let counts = {};
-        result.rows.forEach(row => {
-            counts[row.support] = row.count;
-        });
-    
-        return counts;
+        return result.rows[0].proposal_support
     }    
 }
 

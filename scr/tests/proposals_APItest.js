@@ -9,6 +9,7 @@ const expect = chai.expect;
 describe('API Tests', () => {
   let FirstMember, AnotherMember1, AnotherMember2;
   let membership1, membership2, changeVariable1, newStatement1, removeStatement1 , replaceStatement1 ,newStatement2, newAction1
+  let newActionMember1, newActionMember2, endAction1
   let communityId;
 
   it('Create FirstMember user', (done) => {
@@ -364,4 +365,97 @@ describe('API Tests', () => {
     }, 200);
   });
 
+  it('Create a proposal for a new action', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/proposals')
+        .send({
+            community_id: communityId, 
+            user_id: AnotherMember1,
+            val_uuid: newAction1,
+            proposal_type: 'JoinAction',
+            proposal_text: 'I want to Join!!',
+        })
+        .end((err, res) => {
+            newActionMember1 = res.body.proposal_id
+            console.log("q8:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },200)
+  });
+
+  it('should execute a new action member proposal', (done) => {
+    setTimeout(() => {
+        chai.request(server)
+            .post(`/proposals/execute/${newActionMember1}`)
+            .end((err, res) => {
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 200);
+  });
+
+  it('Create a proposal for a new action', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/proposals')
+        .send({
+            community_id: communityId, 
+            user_id: AnotherMember2,
+            val_uuid: newAction1,
+            proposal_type: 'JoinAction',
+            proposal_text: 'I want to Join!!',
+        })
+        .end((err, res) => {
+            newActionMember2 = res.body.proposal_id
+            console.log("q8:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },200)
+  });
+
+  it('should execute a new action member proposal', (done) => {
+    setTimeout(() => {
+        chai.request(server)
+            .post(`/proposals/execute/${newActionMember2}`)
+            .end((err, res) => {
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 200);
+  });
+
+  it('Create a proposal for to end action', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/proposals')
+        .send({
+            community_id: newAction1, 
+            user_id: AnotherMember2,
+            proposal_type: 'EndAction',
+            proposal_text: 'End it!!',
+        })
+        .end((err, res) => {
+            endAction1 = res.body.proposal_id
+            console.log("q9:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },200)
+  });
+
+  it('should execute a new action member proposal', (done) => {
+    setTimeout(() => {
+        chai.request(server)
+            .post(`/proposals/execute/${endAction1}`)
+            .end((err, res) => {
+                expect(res).to.have.status(200);
+                done();
+            });
+    }, 200);
+  });
+
 });
+

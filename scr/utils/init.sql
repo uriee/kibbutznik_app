@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS UserVotes (
     PRIMARY KEY (user_id, proposal_id)
 );
 
-CREATE TABLE IF NOT EXISTS UserSupport (
+CREATE TABLE IF NOT EXISTS Support (
     user_id uuid,
     proposal_id uuid,
     created_at timestamp, 

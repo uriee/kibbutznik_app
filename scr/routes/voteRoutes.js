@@ -5,8 +5,8 @@ const Vote = require('../modules/votes'); // Assuming the relative path to the V
 // Add a vote
 router.post('/', async (req, res) => {
     try {
-        const { user_id, community_id, proposal_id, vote } = req.body;
-        await Vote.create(user_id, community_id, proposal_id, vote);
+        const { user_id, proposal_id } = req.body;
+        await Vote.create(user_id, proposal_id);
         res.status(201).json({ message: 'Vote added successfully!' });
     } catch (error) {
         console.error('Failed to add vote:', error);
@@ -14,27 +14,70 @@ router.post('/', async (req, res) => {
     }
 });
 
-// Delete votes for a proposal
-router.delete('/:proposalId', async (req, res) => {
+
+router.delete('/:userId/:proposalId', async (req, res) => {
     try {
-        const { proposalId } = req.params;
-        await Vote.delete(proposalId);
-        res.status(200).json({ message: 'Votes for the proposal deleted successfully!' });
+        const userId = req.params.userId;
+        const proposalId = req.params.proposalId;
+        await Vote.delete(userId, proposalId);
+        res.status(200).json({ message: 'Vote deleted successfully!' });
     } catch (error) {
-        console.error('Failed to delete votes:', error);
-        res.status(500).json({ message: 'Failed to delete votes' });
+        console.error('Failed to delete Vote:', error);
+        res.status(500).json({ message: 'Failed to delete Vote' });
     }
 });
 
-// Get votes for a specific user, community, and proposal
-router.get('/', async (req, res) => {
+router.get('/byuser/:userId', async (req, res) => {
     try {
-        const { userId, communityId, proposalId } = req.query;
-        const votes = await Vote.getVotes(userId, communityId, proposalId);
-        res.status(200).json(votes);
+        const proposalId = req.params.proposalId;
+        const userId = req.params.userId;
+        const vote = await Vote.find(userId, null);
+        console.log("431212",vote)
+        res.status(200).json({ vote: vote });
     } catch (error) {
-        console.error('Failed to get votes:', error);
-        res.status(500).json({ message: 'Failed to get votes' });
+        console.error('Failed to find vote:', error);
+        res.status(500).json({ message: 'Failed to find vote' });
+    }
+});
+
+router.get('/byproposal/:proposalId', async (req, res) => {
+    try {
+        const proposalId = req.params.proposalId;
+        const userId = req.params.userId;
+        const vote = await Vote.find(null, proposalId);
+        console.log("4312",vote)
+        res.status(200).json({ vote: vote });
+    } catch (error) {
+        console.error('Failed to find vote:', error);
+        res.status(500).json({ message: 'Failed to find vote' });
+    }
+});
+
+// Find vote by proposal ID and user ID
+router.get('/count/:proposalId', async (req, res) => {
+    try {
+        const proposalId = req.params.proposalId;
+        const userId = req.params.userId;
+        const vote = await Vote.get_count(proposalId);
+        console.log("4312",vote)
+        res.status(200).json({ vote: vote });
+    } catch (error) {
+        console.error('Failed to find vote:', error);
+        res.status(500).json({ message: 'Failed to find vote' });
+    }
+});
+
+// Find vote by proposal ID and user ID
+router.get('/:userId/:proposalId', async (req, res) => {
+    try {
+        const proposalId = req.params.proposalId;
+        const userId = req.params.userId;
+        const vote = await Vote.find(userId, proposalId);
+        console.log("4312",vote)
+        res.status(200).json({ vote: vote });
+    } catch (error) {
+        console.error('Failed to find vote:', error);
+        res.status(500).json({ message: 'Failed to find vote' });
     }
 });
 

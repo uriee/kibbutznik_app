@@ -11,81 +11,95 @@ CREATE TABLE IF NOT EXISTS Votes (
 const DBClient = require('../utils/localDB.js');
 
 class Vote {
-    static async create(user_id,proposal_id,) {
-        const db = DBClient.getInstance();
-
-        const queries = [
-            {
-              query: 'INSERT INTO uservotes(user_id, proposal_id) VALUES (?, ?)',
-              params: [user_id, proposal_id]
-            },
-            {
-              query: 'update proposal_counters set proposal_vote = proposal_vote + 1 where proposal_id = ?;',
-              params: [proposal_id]
-            }
-          ];
-          
-        ret = await db.batch(queries, { prepare: true })
-        .then(result => console.log('Vote Insert Batch executed successfully', result))
-        .catch(err => console.error('Error executing Vote Insert Batch', err));
-        return ret;
+  static async create(user_id, proposal_id) {
+    const db = DBClient.getInstance();
+    const checkQuery = 'SELECT * FROM votes WHERE user_id = ? AND proposal_id = ?';
+    const checkParams = [user_id, proposal_id];
+    const checkResult = await db.execute(checkQuery, checkParams);
+    
+    if (checkResult.rows.length > 0) {
+        throw new Error('Vote row already exists.');
+    }
+    const supportQuery = `INSERT INTO Votes(user_id, proposal_id) VALUES (${user_id}, ${proposal_id})`;
+    try {
+        await db.execute(supportQuery);
+    } catch (err) {
+        console.error('Error executing Support Insert:', err);
+        return null;
     }
 
-    static async delete(user_id,proposal_id,) {
-        const db = DBClient.getInstance();
+    const counterQuery = `UPDATE proposal_counters SET proposal_vote = proposal_vote + 1 WHERE proposal_id = ${proposal_id}`;
+    try {
+        await db.execute(counterQuery);
+    } catch (err) {
+        console.error('Error executing Vote Update:', err);
+        return null;
+    }
+  }
 
-        const queries = [
-            {
-              query: 'DELETE FROM uservotes where user_id = ? and proposal_id = ?',
-              params: [user_id, proposal_id]
-            },
-            {
-              query: 'update proposal_counters set proposal_vote = proposal_vote - 1 where proposal_id = ?;',
-              params: [proposal_id]
-            }
-          ];
-          
-        ret = await db.batch(queries, { prepare: true })
-        .then(result => console.log('Vote Delete Batch executed successfully', result))
-        .catch(err => console.error('Error executing Vote Delete Batch', err));
-        return ret
+
+  static async delete(user_id, proposal_id) {
+    const db = DBClient.getInstance();
+
+    const checkQuery = 'SELECT * FROM Votes WHERE user_id = ? AND proposal_id = ?';
+    const checkParams = [user_id, proposal_id];
+    const checkResult = await db.execute(checkQuery, checkParams);
+    
+    if (checkResult.rows.length <= 0) {
+        throw new Error('Vote row do not exists.');
     }
 
-    static async delete(proposalId) {
-       const db = DBClient.getInstance();
-        const query = 'DELETE FROM Votes WHERE AND proposal_id = ?';
-        const params = [proposalId];
-        await db.execute(query, params);
+    const voteQuery = `DELETE FROM Votes where user_id = ${user_id} and proposal_id = ${proposal_id}`;
+    try {
+        await db.execute(voteQuery);
+    } catch (err) {
+        console.error('Error executing Vote Delete:', err);
+        return null;
     }
 
-    static async getVotes(userId, communityId, proposalId) {
-        if (!userId && !communityId && !proposalId) {
-            return null;
-        }
-
-       const db = DBClient.getInstance();
-        let query = 'SELECT * FROM Votes WHERE';
-        let params = [];
-        let conditions = [];
-
-        if (userId) {
-            conditions.push('user_id = ?');
-            params.push(userId);
-        }
-        if (communityId) {
-            conditions.push('community_id = ?');
-            params.push(communityId);
-        }
-        if (proposalId) {
-            conditions.push('proposal_id = ?');
-            params.push(proposalId);
-        }
-
-        query += ' ' + conditions.join(' AND ');
-
-        const result = await db.execute(query, params);
-        return result.rows;
+    const counterQuery = `UPDATE proposal_counters SET proposal_vote = proposal_vote - 1 WHERE proposal_id = ${proposal_id}`;
+    try {
+        await db.execute(counterQuery);
+    } catch (err) {
+        console.error('Error executing Counter Update:', err);
+        return null;
     }
+  }
+
+  static async find(userId, proposalId) {
+    if (!userId && !proposalId) {
+        return null;
+    }
+
+   const db = DBClient.getInstance();
+    let query = 'SELECT * FROM Votes WHERE';
+    let params = [];
+    let conditions = [];
+
+    if (userId) {
+        conditions.push(`user_id = ${userId}`);
+    }
+    if (proposalId) {
+        conditions.push(`proposal_id = ${proposalId}`);
+    }
+
+    query += ' ' + conditions.join(' AND ');
+    console.log(query)
+    const result = await db.execute(query);
+    return result.rows;
+}
+
+static async get_count(proposalId) {
+    if (!proposalId) {
+        return null;
+    }
+
+   const db = DBClient.getInstance();
+    const query = `SELECT proposal_vote FROM proposal_counters WHERE proposal_id = ${proposalId}`;
+    console.log(query)
+    const result = await db.execute(query);
+    return result.rows[0].proposal_vote
+} 
     
 }
 

@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "mocha scr/tests/${npm_config_module}_APItest.js",
+    "test": "NODE_OPTIONS='--trace-warnings' mocha scr/tests/${npm_config_module}_APItest.js",
     "start": "node server.js --trace-warnings"
   },
   "author": "",

@@ -23,6 +23,13 @@ class DBClient {
         }
         return this.client.execute(query, params, options);
     }
+
+    async batch(queries, options) {
+        if (!this.client.connected) {
+            await this.client.connect();
+        }
+        return this.client.batch(queries, options);
+    }
 }
 
 

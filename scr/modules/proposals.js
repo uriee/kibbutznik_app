@@ -188,7 +188,7 @@ class Proposals {
             case 'EndAction':
                 return await endAction(proposal.community_id);
             case 'JoinAction':
-                return await createMember(proposal.val_uuid, proposal.val_text);
+                return await createMember(proposal.val_uuid, proposal.user_id);
                 /*
             case 'Funding':
                 return await funding(proposal.community_id, proposal.val_uuid, proposal.val_text);
