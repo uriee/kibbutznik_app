@@ -6,23 +6,41 @@ CREATE TABLE IF NOT EXISTS Pulse_Support (
 );
 */
 const DBClient = require('../utils/localDB.js');
-const Pulse = require('./pulses.js')
+const Pulses = require('./pulses.js');
 
 class PulseSupport {
     static async create(community_id, user_id) {
-        const pulse_id = Pulse.pulseIdByStatus(community_id, 1)
-       const db = DBClient.getInstance();
-        const query = 'INSERT INTO Pulse_Support (user_id, pulse_id) VALUES (?, ?)';
-        const params = [user_id, pulse_id];
-        await db.execute(query, params, { hints : ['uuid', 'uuid']});
+        console.log("Creating")
+        const pulse_id = await Pulses.pulseIdByStatus(community_id, 0)
+        console.log("pulse_id: " + pulse_id)
+        const db = DBClient.getInstance();
+        try {
+            const query = `INSERT INTO Pulse_Support (pulse_id, user_id) VALUES (${pulse_id}, ${user_id})`;
+            await db.execute(query);
+
+            const counterQuery = `UPDATE pulse_counter SET pulse_support = pulse_support + 1 WHERE pulse_id = ${pulse_id}`;
+            await db.execute(counterQuery);
+        } catch (err) {
+            console.error("An error occurred:", err);
+            return null
+        }
+        return pulse_id;
     }
 
-    static async delete(user_id, proposalId) {
+    static async delete(community_id, user_id) {
        const db = DBClient.getInstance();
-        const pulse_id = Pulse.pulseIdByStatus(community_id, 1)
-        const query = 'DELETE FROM Pulse_Support WHERE user_id = ? AND pulse_id = ?';
-        const params = [user_id, pulse_id];
-        await db.execute(query, params);
+        const pulse_id  = await Pulses.pulseIdByStatus(community_id, 0)
+        console.log("pulse_id: " + pulse_id)
+        try {
+            const query = `DELETE FROM Pulse_Support WHERE pulse_id = ${pulse_id} AND user_id = ${user_id}`;
+            await db.execute(query);
+            const counterQuery = `UPDATE pulse_counter SET pulse_support = pulse_support - 1 WHERE pulse_id = ${pulse_id}`;
+            await db.execute(counterQuery);
+        } catch (err) {
+            console.error("An error occurred:", err);
+            return null
+        }
+        return pulse_id;
     }
 
     static async findByPulseIdAndUserId(pulseId, userId) {
@@ -41,7 +59,7 @@ class PulseSupport {
         }
         if (proposalId) {
             conditions.push('pulse_id = ?');
-            params.push(proposalId);
+            params.push(pulseId);
         }
 
         query += ' ' + conditions.join(' AND ');
@@ -50,19 +68,18 @@ class PulseSupport {
         return result.rows;
     }
 
-    static async countPulseSupport(community_id) {
-        if (!community_id) {
+    static async get_support(pulseId) {
+        if (!pulseId) {
             return null;
         }
     
        const db = DBClient.getInstance();
-        const pulse_id = Pulse.pulseIdByStatus(community_id, 1)
-        const query = 'SELECT  COUNT(*) as count FROM Support WHERE pulse_id = ?';
-        const params = [pulse_id];
+        const query = `SELECT pulse_support FROM pulse_counter WHERE pulse_id = ${pulseId}`;
+        console.log(query)
+        const result = await db.execute(query);
+        console.log(result.rows[0].pulse_support)
     
-        const result = await db.execute(query, params);
-
-        return result.rows[0].count;
+        return result.rows[0].pulse_support
     }    
 }
 

@@ -27,7 +27,9 @@ class Communities {
         const communityQuery = 'INSERT INTO Communities (community_id, parent_community_id, status) VALUES (?, ?, ?)';
         const communityParams = [community_id, parent_community_id, 1];
         await db.execute(communityQuery, communityParams, { hints : ['uuid','uuid', 'int']});
-
+        console.log('Community created');
+        await createPulse(community_id)
+        console.log('Pulse created');
         await this.copyVariables(community_id);
 
         await this.setName(community_id, name);

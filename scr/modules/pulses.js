@@ -1,5 +1,6 @@
 // models/Pulses.js
 const DBClient = require('../utils/localDB.js');
+const uuid = require('uuid');
 
 const PULSE_STATUS_LIFECYCLE = ['Next', 'Active', 'Done'];
 
@@ -16,8 +17,9 @@ class Pulses {
        const db = DBClient.getInstance();
     
         // Fetch the community's active pulse
-        const pulseQuery = 'SELECT pulse_id FROM Pulse WHERE community_id = ? AND status = ?';
-        const activePulse = await db.execute(pulseQuery, [communityId, pulseStatus]);
+        const pulseQuery = `SELECT pulse_id FROM Pulses WHERE community_id = ${communityId} AND pulse_status = ${pulseStatus}`;
+        console.log("pulseQuery", pulseQuery);
+        const activePulse = await db.execute(pulseQuery);
     
         if (!activePulse.rows.length) {
             return null;  // Or some error message
@@ -27,19 +29,23 @@ class Pulses {
         return pulse_id
     }
 
-    static async create(pulse) {
-       const db = DBClient.getInstance();
-
-        const checkQuery = 'SELECT * FROM Pulses WHERE community_id = ? AND pulse_status = 0';
-        const existingPulse = await db.execute(checkQuery, [pulse.community_id]);
-
+    static async create(communityId) {
+        console.log("pulse", communityId);
+        const db = DBClient.getInstance();
+        const pulse_id = uuid.v4();
+        const checkQuery = `SELECT * FROM Pulses WHERE community_id = ${communityId} AND pulse_status = 0`;
+        console.log("checkQuery", checkQuery);
+        const existingPulse = await db.execute(checkQuery);
         if (existingPulse.rows.length > 0) {
             throw new Error('A pulse with status 0 already exists in this community.');
         }
 
-        const insertQuery = 'INSERT INTO Pulses (community_id, pulse_id, updated_at, pulse_status) VALUES (?, ?, ?, ?)';
-        const params = [pulse.community_id, pulse.pulse_id, new Date(), 0];
+        const insertQuery = 'INSERT INTO Pulses (community_id, pulse_id, updated_at, pulse_status) VALUES (?, ?, totimestamp(now()), 0)';
+        const params = [communityId, pulse_id];
+        console.log("params", params);
         await db.execute(insertQuery, params, { hints : ['uuid', 'uuid', 'timestamp', 'text']});
+
+        return pulse_id
     }
 
     static async IncrementStatus(pulse_id) {

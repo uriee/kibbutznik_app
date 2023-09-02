@@ -73,6 +73,11 @@ CREATE TABLE IF NOT EXISTS proposal_counters (
     proposal_vote counter
 );
 
+CREATE TABLE IF NOT EXISTS pulse_counter (
+    proposal_id uuid PRIMARY KEY,
+    pulse_support counter,
+);
+
 CREATE TABLE IF NOT EXISTS Membership_Payment (
     payment_id uuid,
     community_id uuid,
