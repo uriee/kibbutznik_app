@@ -65,6 +65,8 @@ class Members {
             const insertParams = [community_id, user_id, 1, 0];
             await db.execute(insertQuery, insertParams, { hints: ['uuid', 'uuid', 'int', 'int'] });
         }
+        const counterQuery = `UPDATE member_counter SET member_count = member_count + 1 WHERE community_id = ${community_id}`;
+        await db.execute(counterQuery);
     }
 
     static async throwOut(community_id, user_id) {

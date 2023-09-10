@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS Pulse_Support (
 */
 const DBClient = require('../utils/localDB.js');
 const Pulses = require('./pulses.js');
+const Communities = require('./communities.js');
 
 class PulseSupport {
     static async create(community_id, user_id) {
@@ -20,6 +21,12 @@ class PulseSupport {
 
             const counterQuery = `UPDATE pulse_counter SET pulse_support = pulse_support + 1 WHERE pulse_id = ${pulse_id}`;
             await db.execute(counterQuery);
+            const is_time_4_pulse = await Pulses.time_4_pulse(pulse_id); // replace with Event-Driven Architecture (kafka)
+            console.log(is_time_4_pulse);
+            if (is_time_4_pulse) {
+                await Communities.pulse(community_id)
+            }
+
         } catch (err) {
             console.error("An error occurred:", err);
             return null

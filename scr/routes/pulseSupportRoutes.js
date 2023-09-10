@@ -31,6 +31,7 @@ router.get('/count/:pulseId', async (req, res) => {
     try {
         const { pulseId } = req.params;
         const count = await PulseSupport.get_support(pulseId);
+        console.log('count:', count);
         res.status(200).json({count});
     } catch (error) {
         console.error('Failed to get pulse support count:', error);

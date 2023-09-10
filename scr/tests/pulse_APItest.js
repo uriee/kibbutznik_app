@@ -44,7 +44,7 @@ describe('API Tests', () => {
       });
   });
 
-  
+
   it('Create AnotherMember_1 and AnotherMember_2 users', (done) => {
     // Create AnotherMember_1
     setTimeout(() => { 
@@ -212,68 +212,10 @@ describe('API Tests', () => {
     },200)
   });
 
-  it('Create Vote 1', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .post('/vote')
-        .send({
-            user_id: FirstMember,
-            proposal_id: membership1,
-        })
-        .end((err, res) => {
-            console.log("q4:", res.status, res.body)
-            expect(res).to.have.status(201);
-            done();
-        });
-    },200)
-  });
-
-  it('Create Vote 2', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .post('/vote')
-        .send({
-            user_id: AnotherMember1,
-            proposal_id: membership1,
-        })
-        .end((err, res) => {
-            console.log("q4:", res.status, res.body)
-            expect(res).to.have.status(201);
-            done();
-        });
-    },200)
-  });
-
   it('fetch support', (done) => {
     setTimeout(() => { 
     chai.request(server)
         .get(`/support/${FirstMember}/${membership1}`)
-        .send()
-        .end((err, res) => {
-            console.log("q6:", res.status, res.body)
-            expect(res).to.have.status(200);
-            done();
-        });
-    },200)
-  });
-
-  it('fetch support by user', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .get(`/support/byuser/${FirstMember}`)
-        .send()
-        .end((err, res) => {
-            console.log("q6:", res.status, res.body)
-            expect(res).to.have.status(200);
-            done();
-        });
-    },200)
-  });
-
-  it('fetch support by proposal', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .get(`/support/byproposal/${membership1}`)
         .send()
         .end((err, res) => {
             console.log("q6:", res.status, res.body)
@@ -300,45 +242,6 @@ describe('API Tests', () => {
     setTimeout(() => { 
     chai.request(server)
         .get(`/vote/${FirstMember}/${membership1}`)
-        .send()
-        .end((err, res) => {
-            console.log("q6:", res.status, res.body)
-            expect(res).to.have.status(200);
-            done();
-        });
-    },200)
-  });
-
-  it('fetch vote by user', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .get(`/vote/byuser/${FirstMember}`)
-        .send()
-        .end((err, res) => {
-            console.log("q6:", res.status, res.body)
-            expect(res).to.have.status(200);
-            done();
-        });
-    },200)
-  });
-
-  it('fetch vote by proposal', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .get(`/vote/byproposal/${membership1}`)
-        .send()
-        .end((err, res) => {
-            console.log("q6:", res.status, res.body)
-            expect(res).to.have.status(200);
-            done();
-        });
-    },200)
-  });
-
-  it('fetch vote count by proposal', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .get(`/vote/count/${membership1}`)
         .send()
         .end((err, res) => {
             console.log("q6:", res.status, res.body)
@@ -378,6 +281,22 @@ describe('API Tests', () => {
     },200)
   });
 
+  it('Create Vote 1', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/vote')
+        .send({
+            user_id: FirstMember,
+            proposal_id: membership1,
+        })
+        .end((err, res) => {
+            console.log("q4:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },200)
+  });
+
   it('Delete pulse support', (done) => {
     setTimeout(() => { 
     chai.request(server)
@@ -386,6 +305,23 @@ describe('API Tests', () => {
         .end((err, res) => {
             console.log("q42:", res.status, res.body)
             expect(res).to.have.status(200);
+            done();
+        });
+    },200)
+  });
+
+  it('Create pulse support', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/pulseSupport')
+        .send({
+            community_id: communityId,
+            user_id: FirstMember,
+        })
+        .end((err, res) => {
+            console.log("q42:", res.status, res.body)
+            pulseId = res.body.pulse_id;
+            expect(res).to.have.status(201);
             done();
         });
     },200)

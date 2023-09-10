@@ -34,6 +34,11 @@ CREATE TABLE IF NOT EXISTS Communities (
     PRIMARY KEY(community_id)
 );
 
+CREATE TABLE IF NOT EXISTS member_counter (
+    community_id uuid PRIMARY KEY,
+    member_count counter,
+);
+
 CREATE TABLE IF NOT EXISTS Members (
     community_id uuid,
     user_id uuid,
@@ -74,8 +79,10 @@ CREATE TABLE IF NOT EXISTS proposal_counters (
 );
 
 CREATE TABLE IF NOT EXISTS pulse_counter (
-    proposal_id uuid PRIMARY KEY,
+    pulse_id uuid PRIMARY KEY,
     pulse_support counter,
+    threshold counter,
+    member_count counter
 );
 
 CREATE TABLE IF NOT EXISTS Membership_Payment (

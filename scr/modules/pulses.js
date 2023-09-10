@@ -2,6 +2,7 @@
 const DBClient = require('../utils/localDB.js');
 const uuid = require('uuid');
 
+
 const PULSE_STATUS_LIFECYCLE = ['Next', 'Active', 'Done'];
 
 class Pulses {
@@ -44,6 +45,21 @@ class Pulses {
         const params = [communityId, pulse_id];
         console.log("params", params);
         await db.execute(insertQuery, params, { hints : ['uuid', 'uuid', 'timestamp', 'text']});
+        console.log("fine 1")
+        const variableQuery = `SELECT variable_value FROM Variables WHERE community_id = ${communityId} AND variable_type = 'PulseSupport'`;
+        const variables = await db.execute(variableQuery);
+        console.log("fine 2",variables)
+        const pulseSupport = variables.rows[0].variable_value;
+        console.log("pulseSupport", pulseSupport,communityId)
+        // Fetch the community's member_count
+        const communityQuery = `SELECT member_count FROM member_counter WHERE community_id = ?`;
+        const community = await db.execute(communityQuery, [communityId]);
+        const member_count = (community.rows[0].member_count).toNumber();
+        console.log("member_count", member_count,pulseSupport/ 100.0)
+        console.log("member_count * pulseSupport",  Math.ceil(member_count* pulseSupport / 100 ))
+        const counterQuery = `UPDATE pulse_counter SET member_count = member_count + ${member_count}, threshold=threshold+${Math.ceil(member_count* pulseSupport / 100)}  WHERE pulse_id = ${pulse_id}`;
+        console.log("counterQuery", counterQuery);
+        await db.execute(counterQuery);
 
         return pulse_id
     }
@@ -62,6 +78,22 @@ class Pulses {
         const params = [1];
         const result = await db.execute(query, params);
         return result.rows;
+    }
+
+    static async time_4_pulse(pulse_id) {
+        if (!pulse_id) {
+            return null;
+        }
+        const db = DBClient.getInstance();
+        const supportQuery = `SELECT pulse_support ,threshold FROM pulse_counter WHERE pulse_id = ${pulse_id}`;
+        const pulseSupport_q = await db.execute(supportQuery);
+        const threshold = pulseSupport_q.rows[0].threshold;
+        const Pulse_Support = pulseSupport_q.rows[0].pulse_support;
+        if (Pulse_Support >= threshold) {
+            return true;
+            } else {
+            return false;
+        }
     }
 
 }

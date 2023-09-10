@@ -4,6 +4,8 @@ const { IncrementStatus, create: createPulse } = require('./pulses.js');
 const { executeProposal, UpdateStatus} = require('./proposals.js');
 const express = require('express');
 const Users = require('../modules/users.js');
+const Pulses = require('../modules/pulses.js');
+const Proposals = require('../modules/proposals.js');
 const uuid = require('uuid');
 
 class Communities {
@@ -28,8 +30,7 @@ class Communities {
         const communityParams = [community_id, parent_community_id, 1];
         await db.execute(communityQuery, communityParams, { hints : ['uuid','uuid', 'int']});
         console.log('Community created');
-        await createPulse(community_id)
-        console.log('Pulse created');
+
         await this.copyVariables(community_id);
 
         await this.setName(community_id, name);
@@ -38,6 +39,17 @@ class Communities {
         const memberQuery = 'INSERT INTO Members (community_id, user_id, status, seniority) VALUES (?, ?, ?, ?)';
         const memberParams = [community_id, user_id, 1, 0]; 
         await db.execute(memberQuery, memberParams, { hints : ['uuid', 'uuid', 'int', 'int']});
+
+        const counterQuery = `UPDATE member_counter SET member_count = member_count + 1 WHERE community_id = ${community_id}`;
+        console.log('xxx', counterQuery);
+        try {
+            await db.execute(counterQuery);
+        }catch (err) {
+            console.Console.error("p",err)
+        }
+
+        await createPulse(community_id)
+        console.log('Pulse created');
 
         return community_id;
     }
@@ -225,8 +237,10 @@ class Communities {
 
             const pulseQuery = 'SELECT pulse_id FROM Pulse WHERE community_id = ? AND status = ?';
             const activePulse = await db.execute(pulseQuery, [community_id, 1]);
+            const variables = await this.fetchCommunityVariables(community_id);
+            const proposals = await this.AcceptedOrRejected(community_id, activePulse, variables);
 
-            const proposals = await this.AcceptedOrRejected(community_id, activePulse);
+
             
             for (const [proposal_id, isAccepted] of Object.entries(proposals)) {
                 if (isAccepted) {
@@ -243,14 +257,18 @@ class Communities {
         }
     }
 
-    static async AcceptedOrRejected(community_id) {
+    static async AcceptedOrRejected(community_id, pulse_id, variables) {
         if (!community_id) {
             return null;
         }
     
         const db = DBClient.getInstance();
     
-        pulse_id = pulseIdByStatus(community_id, 1)
+        pulse_id = await Pulses.pulseIdByStatus(community_id, 1)
+        console.log(pulse_id)
+        if (!pulse_id) {
+            return false
+        }
     
         // Fetch all the proposals that are linked to the pulse_id
         const proposalQuery = 'SELECT proposal_id, proposal_type FROM Proposals WHERE community_id = ? AND pulse_id = ?';
@@ -264,12 +282,11 @@ class Communities {
         const results = {};
         for (let proposal of proposals.rows) {
             const votes = await countVotes(proposal.proposal_id);
-    
-            // Fetch the variable_value where Variable.variable_type == Proposals.proposal_type
-            const variableQuery = 'SELECT variable_value FROM Variables WHERE community_id = ? AND variable_type = ?';
-            const variable = await db.execute(variableQuery, [community_id, proposal.proposal_type]);
-            const variable_value = variable.rows[0].variable_value;
-    
+            const variable_value = variables[proposal.proposal_type];
+
+            counters_r = await db.execute(`SELECT * FROM proposal_counters WHERE proposal_id = ${proposal.proposal_id}`)
+            const threshold = counters_r.rows[0];
+
             // Check if the proposal is accepted or rejected
             results[proposal.proposal_id] = (votes[1] / member_count * 100 > variable_value);
         }
@@ -277,7 +294,30 @@ class Communities {
         return results;
     }
 
-    static async OutThere_2_OnTheAir(community_id) {
+    static async fetchCommunityVariables(community_id, variable_types=[]) {
+        const resultMap = {};
+        let query = 'SELECT * FROM Variables WHERE community_id = ?';
+        let params = [community_id];
+        const db = DBClient.getInstance();
+      
+        if (variable_types.length > 0) {
+          query += ' AND variable_type IN ?';
+          params.push(variable_types);
+        }
+      
+        try {
+          const result = await db.execute(query, params, { prepare: true });
+          for (const row of result.rows) {
+            resultMap[row.variable_type] = row.variable_value;
+          }
+        } catch (err) {
+          console.error('Failed to fetch community variables:', err);
+        }
+      
+        return resultMap;
+      }
+
+    static async OutThere_2_OnTheAir(community_id, variables) {
         if (!community_id) {
             return null;
         }
@@ -285,45 +325,60 @@ class Communities {
         const db = DBClient.getInstance();
     
         // Fetch the community's 'Next' pulse
-        const nextPulse = pulseIdByStatus(community_id, 0)
-        if (!nextPulse.rows.length) {
+        const nextPulse_id = await Pulses.pulseIdByStatus(community_id, 0)
+        console.log("_________________________", nextPulse_id)
+        if (!nextPulse_id) {
             throw new Error('No next pulse found for this community.');
         }
     
         // Fetch PulseSupport and MaxAge variable values
-        const variableQuery = 'SELECT variable_value FROM Variables WHERE community_id = ? AND variable_type IN (?, ?)';
-        const variables = await db.execute(variableQuery, [community_id, 'PulseSupport', 'MaxAge']);
-        const pulseSupport = variables.rows.find(variable => variable.variable_type === 'PulseSupport').variable_value;
-        const maxAge = variables.rows.find(variable => variable.variable_type === 'MaxAge').variable_value;
+        const variableQuery = `SELECT variable_value FROM Variables WHERE community_id = ? AND variable_type = ?`;
+        const maxAge_q = await db.execute(variableQuery, [community_id, 'MaxAge']);
+        const maxAge = maxAge_q.rows[0].variable_value;
     
         // Fetch the community's member_count
-        const communityQuery = 'SELECT members_count FROM Communities WHERE community_id = ?';
+        const communityQuery = 'SELECT member_count FROM member_counter WHERE community_id = ?';
         const community = await db.execute(communityQuery, [community_id]);
         const member_count = community.rows[0].members_count;
-    
-        // Update community support
-        await this.updateSupport(community_id);
     
         // Fetch community proposals of status 'OutThere' and update their status
         const outThereProposalsQuery = 'SELECT * FROM Proposals WHERE community_id = ? AND proposal_status = ?';
         const outThereProposals = await db.execute(outThereProposalsQuery, [community_id, 'OutThere']);
         for (let proposal of outThereProposals.rows) {
-            const proposalSupport = proposal.proposal_support;
-            if (proposalSupport / member_count * 100 > pulseSupport) {
-                await Proposals.UpdateStatus(proposal.proposal_id, true);
-            } else {
-                if (maxAge > proposal.age) {
-                    await Proposals.UpdateStatus(proposal.proposal_id, false);
-                }
+            const query = `select proposal_support from proposal_counters WHERE proposal_id = ${proposal.proposal_id}`;
+            const proposal_counters = await db.execute(query);
+            const query_u = `update proposal_counters SET age = age + 1 WHERE proposal_id = ${proposal.proposal_id}`;
+            await db.execute(query_u);
+            console.log("____________",proposal_counters.rows)
+            let proposalSupport = 0;
+            let proposalAgeThreshold = 50;
+            if (proposal_counters.rows) {
+                proposalSupport = proposal_counters.rows[0].proposal_support;
+                proposalAgeThreshold = proposal_counters.rows[0].age;
+                console.log("____________54",proposal_counters.rows[0],proposal_counters.rows);
+                console.log("____________55",proposalAgeThreshold);
             }
+            if (proposal.proposal_type in variables) {
+                console.log("____________12",proposal.proposal_type, variables[proposal.proposal_type])
+                const NeddedSupport = variables[proposal.proposal_type];
+                await Proposals.UpdateStatus(proposal.proposal_id, NeddedSupport >= proposalSupport);
+            }else{
+                console.log("FuckIt");
+            }
+            if (proposalAgeThreshold < proposal.proposal_age) {
+                    await Proposals.UpdateStatus(proposal.proposal_id, false);
+            }
+
         }
-        IncrementStatus(nextPulse)
+        IncrementStatus(nextPulse_id)
         createPulse(community_id)
     }
 
     static async pulse(community_id){
-        this.handleOnTheAirProposals(community_id)
-        this.OutThere_2_OnTheAir(community_id)
+        const variables = await Communities.fetchCommunityVariables(community_id);
+        console.log("|--___---______",variables)
+        this.handleOnTheAirProposals(community_id, variables['MaxAge'])
+        this.OutThere_2_OnTheAir(community_id,variables)
     }
 
 }
