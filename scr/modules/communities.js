@@ -389,15 +389,42 @@ class Communities {
         }
         await PulseIncrementStatus(nextPulse_id, community_id, 0)
         const xxx = await createPulse(community_id)
-        console.log("CreatePUlse12",xxx)
         return true
     }
+
+    static async handle_members(community_id) {
+        const db = DBClient.getInstance();
+        let member_count = 0;
+    
+        try {
+          // Increment seniority for all members
+          const getMembersQuery = `SELECT user_id FROM Members WHERE community_id = ?`;
+          const membersResult = await db.execute(getMembersQuery, [community_id], { prepare: true });
+          const updateSeniorityQuery = `UPDATE seniority_counter SET seniority = seniority + 1 WHERE community_id = ? AND user_id = ?`;
+          
+          for (const row of membersResult.rows) {
+            await db.execute(updateSeniorityQuery, [community_id, row.user_id], { prepare: true });
+            member_count++;
+          }
+    
+          // Update the community members_count
+          const updateCommunityQuery = `UPDATE Communities SET members_count = ? WHERE community_id = ?`;
+          await db.execute(updateCommunityQuery, [member_count, community_id], { prepare: true });
+    
+          return [true, member_count];
+    
+        } catch (err) {
+          console.error("Error in calc_membership:", err);
+          return [false, err];
+        }
+      }
 
     static async pulse(community_id){
         const variables = await Communities.fetchCommunityVariables(community_id);
         console.log("_____99",variables)
         const xx1 = await this.handleOnTheAirProposals(community_id, variables)
         const xx2 = await this.OutThere_2_OnTheAir(community_id,variables)
+        const xx3 = await this.handle_members(community_id);
         console.log("OOOO",xx1,xx2)
     }
 
