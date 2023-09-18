@@ -14,7 +14,7 @@ const PROPOSAL_STATUS_LIFECYCLE = ['Draft', 'OutThere', 'OnTheAir', 'Accepted'];
 
 class Proposals {
 
-    static async create(community_id, user_id, proposal_type, proposal_text, val_uuid, val_text) {
+    static async create(community_id, user_id, proposal_type, proposal_text, val_uuid, val_text, outhere=false) {
         if (!PROPOSAL_STATUS_ENUM.includes(proposal_type=='Membership' ? 'OutThere' : 'Draft')) {
             throw new Error(`Invalid proposal_status: ${proposal_status}`);
         }
@@ -23,7 +23,7 @@ class Proposals {
             throw new Error(`Invalid proposal_type: ${proposal_type}`);
         }
     
-        const proposal_status = proposal_type == 'Membership' ? 'OutThere' : 'Draft';
+        const proposal_status = proposal_type == 'Membership' || outhere ? 'OutThere' : 'Draft';
         const proposal_id = uuid.v4();
         const db = DBClient.getInstance();
     
@@ -119,15 +119,15 @@ class Proposals {
     }
 
 
-    static async UpdateStatus(proposalId, direction) {
+    static async UpdateStatus(proposalId, direction, pulseId=null) {
         const db = DBClient.getInstance();
-        console.log("pp",proposalId, this.findById)
-        const proposal = await this.findById(proposalId);
-        console.log("proposal", proposal)
+        console.log("aaaa",proposalId, Proposals.findById)
+        const proposal = await Proposals.findById(proposalId);
+        console.log("proposal1", proposal)
         if (!proposal) {
             throw new Error(`Proposal with id ${proposalId} not found`);
         }
-        console.log("proposal", proposal)
+        console.log("proposal2", proposal)
         const currentIndex = PROPOSAL_STATUS_LIFECYCLE.indexOf(proposal.proposal_status);
 
         if (currentIndex === -1 || currentIndex === PROPOSAL_STATUS_LIFECYCLE.length - 1) {
@@ -141,14 +141,20 @@ class Proposals {
             newStatus = currentIndex === 2 ? 'Rejected' : 'Canceled';
         }
         console.log("p3",newStatus)
-        const query = 'UPDATE Proposals SET proposal_status = ? WHERE proposal_id = ? and community_id = ?';
-        const params = [newStatus, proposalId, proposal.community_id];
+
+        let query = 'UPDATE Proposals SET proposal_status = ?,pulse_id = ? WHERE proposal_id = ? and community_id = ?';
+        let params = [newStatus, pulseId, proposalId, proposal.community_id];
+        if (!pulseId) {
+            query = 'UPDATE Proposals SET proposal_status = ? WHERE proposal_id = ? and community_id = ?';
+            params = [newStatus, proposalId, proposal.community_id]
+        }
         await db.execute(query, params);
     }
 
 
     static async executeProposal(proposal_id) {
-       const db = DBClient.getInstance();
+        console.log("zxc", proposal_id)
+        const db = DBClient.getInstance();
         console.log("zxc", proposal_id)
         // Fetch the proposal
         let query = 'SELECT * FROM Proposals WHERE proposal_id = ?';

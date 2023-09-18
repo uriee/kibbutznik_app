@@ -9,7 +9,7 @@ router.post('/', async (req, res) => {
     try {
         const { community_id, user_id, proposal_type, proposal_text, val_uuid, val_text } = req.body;
         console.log("rrrr",req.body)
-        const proposal_id = await Proposals.create(community_id, user_id, proposal_type, proposal_text, val_uuid, val_text);
+        const proposal_id = await Proposals.create(community_id, user_id, proposal_type, proposal_text, val_uuid, val_text, true);
         console.log('Proposal created successfully!', proposal_id);
         res.status(201).json({ message: 'Proposal created successfully!', proposal_id: proposal_id});
     } catch (error) {

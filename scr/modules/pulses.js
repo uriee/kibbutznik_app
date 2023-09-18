@@ -64,13 +64,24 @@ class Pulses {
         return pulse_id
     }
 
-    static async IncrementStatus(pulse_id) {
-       const db = DBClient.getInstance();
-        // assuming pulse_status gets incremented by 1 and updated_at gets the current timestamp
-        const query = 'UPDATE Pulses SET pulse_status = pulse_status + 1, updated_at = ? WHERE pulse_id = ?';
-        const params = [new Date(), pulse_id];
-        await db.execute(query, params);
+    static async PulseIncrementStatus(pulse_id,community_id, pulse_status) {
+        try{
+            const db = DBClient.getInstance();
+            pulse_status += 1
+            // assuming pulse_status gets incremented by 1 and updated_at gets the current timestamp
+            const query = `UPDATE Pulses SET pulse_status = ${pulse_status}, updated_at = totimestamp(now()) WHERE community_id = ${community_id} and pulse_id = ${pulse_id}`;
+            xxx = await db.execute(query);
+            console.log("pulse_status", xxx)
+            if(pulse_status == 1) {
+                this.create(community_id)
+            }
+        }
+        catch{
+            return false
+        }
+        return true
     }
+
     
     static async findActive() {
        const db = DBClient.getInstance();

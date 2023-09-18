@@ -1,11 +1,12 @@
 //const { transfer, getBalance } = require('../utils/transfer.js');
 const DBClient = require('../utils/localDB.js');
-const { IncrementStatus, create: createPulse } = require('./pulses.js');
+const { PulseIncrementStatus, create: createPulse } = require('./pulses.js');
 const { executeProposal, UpdateStatus} = require('./proposals.js');
 const express = require('express');
 const Users = require('../modules/users.js');
 const Pulses = require('../modules/pulses.js');
 const Proposals = require('../modules/proposals.js');
+const Actions = require('../modules/actions.js');
 const uuid = require('uuid');
 
 class Communities {
@@ -232,29 +233,35 @@ class Communities {
         await db.execute(query, params);
     }
 
-    static async handleOnTheAirProposals(community_id) {
+    static async handleOnTheAirProposals(community_id, variables) {
         try {
-
-            const pulseQuery = 'SELECT pulse_id FROM Pulse WHERE community_id = ? AND status = ?';
-            const activePulse = await db.execute(pulseQuery, [community_id, 1]);
-            const variables = await this.fetchCommunityVariables(community_id);
+            console.log("QQQQ")
+            const activePulse = await Pulses.pulseIdByStatus(community_id, 1)
+            console.log("QQQQ",activePulse)
+            if (!activePulse) {
+                return 0
+            }
             const proposals = await this.AcceptedOrRejected(community_id, activePulse, variables);
 
-
+            console.log("______________21", proposals)
             
             for (const [proposal_id, isAccepted] of Object.entries(proposals)) {
                 if (isAccepted) {
-                    console.log("1234567890",Communities.create )
-                    await executeProposal(proposal_id, Communities.create, Communities.endAction);
-                    await UpdateStatus(proposal_id, true);  
+                    console.log("1234567890",Actions.create ,proposal_id)
+                    let xxx = await executeProposal(proposal_id, Actions.create, Actions.endAction);
+                    console.log("12345678901")
+                    xxx = await UpdateStatus(proposal_id, true);  
+                    console.log("12345678902")
                 } else {
                     await UpdateStatus(proposal_id, false); 
                 }
             }
-            IncrementStatus(activePulse)
+            PulseIncrementStatus(activePulse, community_id, 1)
         } catch (error) {
             console.error(`Error handling proposals: ${error.message}`);
+            return 2
         }
+        return 1
     }
 
     static async AcceptedOrRejected(community_id, pulse_id, variables) {
@@ -281,14 +288,18 @@ class Communities {
     
         const results = {};
         for (let proposal of proposals.rows) {
-            const votes = await countVotes(proposal.proposal_id);
+
             const variable_value = variables[proposal.proposal_type];
 
-            counters_r = await db.execute(`SELECT * FROM proposal_counters WHERE proposal_id = ${proposal.proposal_id}`)
-            const threshold = counters_r.rows[0];
-
+            const counters_r = await db.execute(`SELECT * FROM proposal_counters WHERE proposal_id = ${proposal.proposal_id}`)
+            let votes = 0;
+            console.log("-_____65",counters_r.rows[0].proposal_vote == null)
+            if (counters_r.rows[0].proposal_vote != null) {
+                votes = counters_r.rows[0].proposal_vote.low
+            }
+            console.log("______97", votes,counters_r.rows[0].proposal_vote ,variable_value)
             // Check if the proposal is accepted or rejected
-            results[proposal.proposal_id] = (votes[1] / member_count * 100 > variable_value);
+            results[proposal.proposal_id] = (votes / member_count * 100 > variable_value);
         }
     
         return results;
@@ -339,18 +350,18 @@ class Communities {
         // Fetch the community's member_count
         const communityQuery = 'SELECT member_count FROM member_counter WHERE community_id = ?';
         const community = await db.execute(communityQuery, [community_id]);
-        const member_count = community.rows[0].members_count;
+        const member_count = community.rows[0].member_count;
     
         // Fetch community proposals of status 'OutThere' and update their status
         const outThereProposalsQuery = 'SELECT * FROM Proposals WHERE community_id = ? AND proposal_status = ?';
         const outThereProposals = await db.execute(outThereProposalsQuery, [community_id, 'OutThere']);
         for (let proposal of outThereProposals.rows) {
-            const query = `select proposal_support from proposal_counters WHERE proposal_id = ${proposal.proposal_id}`;
-            const proposal_counters = await db.execute(query);
             const query_u = `update proposal_counters SET age = age + 1 WHERE proposal_id = ${proposal.proposal_id}`;
             await db.execute(query_u);
-            console.log("____________",proposal_counters.rows)
-            let proposalSupport = 0;
+            const query = `select * from proposal_counters WHERE proposal_id = ${proposal.proposal_id}`;
+            const proposal_counters = await db.execute(query, [], { traceQuery: true });
+            console.log("____________",proposal_counters.info)
+            let proposalSupport = null;
             let proposalAgeThreshold = 50;
             if (proposal_counters.rows) {
                 proposalSupport = proposal_counters.rows[0].proposal_support;
@@ -358,27 +369,36 @@ class Communities {
                 console.log("____________54",proposal_counters.rows[0],proposal_counters.rows);
                 console.log("____________55",proposalAgeThreshold);
             }
-            if (proposal.proposal_type in variables) {
-                console.log("____________12",proposal.proposal_type, variables[proposal.proposal_type])
-                const NeddedSupport = variables[proposal.proposal_type];
-                await Proposals.UpdateStatus(proposal.proposal_id, NeddedSupport >= proposalSupport);
+            if (proposalSupport && proposal.proposal_type in variables) {
+                console.log("____________12",proposalSupport.toInt(), member_count.toInt()/ 100.0 * variables[proposal.proposal_type])
+                const NeddedSupport =  member_count.toInt()/ 100.0 * variables[proposal.proposal_type];
+                console.log(proposalSupport.toInt() >= NeddedSupport, proposalSupport >= NeddedSupport )
+                if (proposalSupport >= NeddedSupport) {
+                    await Proposals.UpdateStatus(proposal.proposal_id, true, nextPulse_id);
+                }else{
+                    if (proposalAgeThreshold < proposal.proposal_age) {
+                        await Proposals.UpdateStatus(proposal.proposal_id, false);
+                    }
+                }
+                
             }else{
                 console.log("FuckIt");
             }
-            if (proposalAgeThreshold < proposal.proposal_age) {
-                    await Proposals.UpdateStatus(proposal.proposal_id, false);
-            }
+
 
         }
-        IncrementStatus(nextPulse_id)
-        createPulse(community_id)
+        await PulseIncrementStatus(nextPulse_id, community_id, 0)
+        const xxx = await createPulse(community_id)
+        console.log("CreatePUlse12",xxx)
+        return true
     }
 
     static async pulse(community_id){
         const variables = await Communities.fetchCommunityVariables(community_id);
-        console.log("|--___---______",variables)
-        this.handleOnTheAirProposals(community_id, variables['MaxAge'])
-        this.OutThere_2_OnTheAir(community_id,variables)
+        console.log("_____99",variables)
+        const xx1 = await this.handleOnTheAirProposals(community_id, variables)
+        const xx2 = await this.OutThere_2_OnTheAir(community_id,variables)
+        console.log("OOOO",xx1,xx2)
     }
 
 }

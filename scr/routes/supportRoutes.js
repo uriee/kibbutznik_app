@@ -34,7 +34,6 @@ router.get('/byuser/:userId', async (req, res) => {
         const proposalId = req.params.proposalId;
         const userId = req.params.userId;
         const supports = await Support.find(userId, null);
-        console.log("431212",supports)
         res.status(200).json({ supports: supports });
     } catch (error) {
         console.error('Failed to find support:', error);

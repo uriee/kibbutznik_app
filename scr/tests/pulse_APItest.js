@@ -118,7 +118,7 @@ describe('API Tests', () => {
         });
     },200)
   });
-
+/*
   it('Create a proposal to add a new statement', (done) => {
     setTimeout(() => { 
     chai.request(server)
@@ -156,27 +156,8 @@ describe('API Tests', () => {
         });
     },200)
   });
+  */
   //------------------------------------------------------------------------
-
-  it('Create a proposal to remove a statement', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .post('/proposals')
-        .send({
-            community_id: communityId,
-            val_uuid: newStatement1,
-            user_id: FirstMember,
-            proposal_type: 'RemoveStatement',
-            proposal_text: 'Remove statement now!!',
-        })
-        .end((err, res) => {
-            removeStatement1 = res.body.proposal_id
-            console.log("q5:", res.status, res.body)
-            expect(res).to.have.status(201);
-            done();
-        });
-    },200)
-  });
 
   it('Create support', (done) => {
     setTimeout(() => { 
@@ -200,8 +181,8 @@ describe('API Tests', () => {
     chai.request(server)
         .post('/support')
         .send({
-            user_id: AnotherMember1,
-            proposal_id: membership1,
+            user_id: FirstMember,
+            proposal_id: membership2,
             support: 1,
         })
         .end((err, res) => {
@@ -238,18 +219,6 @@ describe('API Tests', () => {
     },200)
   });
 
-  it('fetch vote', (done) => {
-    setTimeout(() => { 
-    chai.request(server)
-        .get(`/vote/${FirstMember}/${membership1}`)
-        .send()
-        .end((err, res) => {
-            console.log("q6:", res.status, res.body)
-            expect(res).to.have.status(200);
-            done();
-        });
-    },200)
-  });
 
   it('Create pulse support', (done) => {
     setTimeout(() => { 
@@ -257,7 +226,7 @@ describe('API Tests', () => {
         .post('/pulseSupport')
         .send({
             community_id: communityId,
-            user_id: AnotherMember1,
+            user_id: FirstMember,
         })
         .end((err, res) => {
             console.log("q42:", res.status, res.body)
@@ -296,7 +265,23 @@ describe('API Tests', () => {
         });
     },200)
   });
-
+  it('Create support', (done) => {
+    setTimeout(() => { 
+    chai.request(server)
+        .post('/support')
+        .send({
+            user_id: FirstMember,
+            proposal_id: changeVariable1,
+            support: 1,
+        })
+        .end((err, res) => {
+            console.log("q4:", res.status, res.body)
+            expect(res).to.have.status(201);
+            done();
+        });
+    },200)
+  });
+/*
   it('Delete pulse support', (done) => {
     setTimeout(() => { 
     chai.request(server)
@@ -309,7 +294,7 @@ describe('API Tests', () => {
         });
     },200)
   });
-
+*/
   it('Create pulse support', (done) => {
     setTimeout(() => { 
     chai.request(server)

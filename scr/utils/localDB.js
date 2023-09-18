@@ -9,25 +9,25 @@ class DBClient {
         });
 
         this.client.on('error', (err) => {
-            console.error('Error event emitted: ', err);
+            console.error('*** Error event emitted: ', err);
           });
           this.client.on('timeout', (err) => {
-            console.error('Timeout event emitted: ', err);
+            console.error('*** Timeout event emitted: ', err);
           });
           this.client.on('end', (err) => {
-            console.error('End event emitted: ', err);
+            console.error('*** End event emitted: ', err);
           });
           this.client.on('ready', (err) => {
-            console.error('Ready event emitted: ', err);
+            console.error('*** Ready event emitted: ', err);
           });
           this.client.on('reconnect', (err) => {
-            console.error('Reconnect event emitted: ', err);
+            console.error('*** Reconnect event emitted: ', err);
           });
           this.client.on('reconnectFailed', (err) => {
-            console.error('ReconnectFailed event emitted: ', err);
+            console.error('*** ReconnectFailed event emitted: ', err);
           });
           this.client.on('connection', (err) => {
-            console.error('Connection event emitted: ', err);
+            console.error('*** Connection event emitted: ', err);
           });
 
         this.client.connect();
@@ -45,7 +45,7 @@ class DBClient {
             console.log("FREEEEEEEEEEE")
             await this.client.connect();
         }
-        console.log(query, params, options);
+        console.log("QUERY:",query, params, options);
         return this.client.execute(query, params, options);
         r/*eturn this.client.execute(query, params, options, (err, result) => {
             if (err) {
