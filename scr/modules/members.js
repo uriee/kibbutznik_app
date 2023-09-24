@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS Members (
     community_id uuid,
     user_id uuid,
     status  int,
-    seniority int,
     PRIMARY KEY ((community_id), user_id)
 );
 */

@@ -39,11 +39,17 @@ CREATE TABLE IF NOT EXISTS member_counter (
     member_count counter,
 );
 
+CREATE TABLE IF NOT EXISTS seniority_counter (
+    community_id uuid ,
+    user_id uuid,
+    seniority counter,
+    PRIMARY KEY(community_id, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS Members (
     community_id uuid,
     user_id uuid,
     status int,
-    seniority int,
     PRIMARY KEY ((community_id), user_id)
 );
 
@@ -66,7 +72,7 @@ CREATE TABLE  Proposals (
     pulse_id uuid,
     age int,
     created_at timestamp,
-    updated_at timestamp,
+    updated_at timestamp, 
     val_uuid uuid,
     val_text text,
     PRIMARY KEY (community_id, proposal_id)
@@ -75,7 +81,9 @@ CREATE TABLE  Proposals (
 CREATE TABLE IF NOT EXISTS proposal_counters (
     proposal_id uuid PRIMARY KEY,
     proposal_support counter,
-    proposal_vote counter
+    nedded_support counter,
+    proposal_vote counter,
+    age counter
 );
 
 CREATE TABLE IF NOT EXISTS pulse_counter (

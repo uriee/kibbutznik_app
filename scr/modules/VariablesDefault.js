@@ -110,7 +110,7 @@ class DefaultVariables {
         },
         {
             "type" : "MaxAge",
-            "value" : '3',
+            "value" : '2',
             "desc" : "The Maximim 'OutThere' Proposal Age (in Pulses).",
         },
         {

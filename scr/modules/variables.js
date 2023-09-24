@@ -80,11 +80,9 @@ class Variables {
         }
     
         const db = DBClient.getInstance();
-        console.log("db",db)
         // Fetch all the default variable values
         const defaultVariableValuesQuery = 'SELECT * FROM Default_Variable_Values';
         const defaultVariableValuesResult = await db.execute(defaultVariableValuesQuery);
-        console.log("defaultVariableValuesResult",defaultVariableValuesResult)
         
         // Copy each default variable value to Variables table
         for (let defaultVariableValue of defaultVariableValuesResult.rows) {

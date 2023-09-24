@@ -280,7 +280,7 @@ class Communities {
         // Fetch all the proposals that are linked to the pulse_id
         const proposalQuery = 'SELECT proposal_id, proposal_type FROM Proposals WHERE community_id = ? AND pulse_id = ?';
         const proposals = await db.execute(proposalQuery, [community_id, pulse_id]);
-    
+        console.log("_____84", proposals,pulse_id);
         // Fetch the community's member_count
         const communityQuery = 'SELECT members_count FROM Communities WHERE community_id = ?';
         const community = await db.execute(communityQuery, [community_id]);
@@ -297,7 +297,7 @@ class Communities {
             if (counters_r.rows[0].proposal_vote != null) {
                 votes = counters_r.rows[0].proposal_vote.low
             }
-            console.log("______97", votes,counters_r.rows[0].proposal_vote ,variable_value)
+            console.log("______97", votes, variable_value,votes / member_count * 100 >= variable_value)
             // Check if the proposal is accepted or rejected
             results[proposal.proposal_id] = (votes / member_count * 100 > variable_value);
         }
@@ -362,29 +362,27 @@ class Communities {
             const proposal_counters = await db.execute(query, [], { traceQuery: true });
             console.log("____________",proposal_counters.info)
             let proposalSupport = null;
-            let proposalAgeThreshold = 50;
+            let proposalAge = 0;
             if (proposal_counters.rows) {
                 proposalSupport = proposal_counters.rows[0].proposal_support;
-                proposalAgeThreshold = proposal_counters.rows[0].age;
+                proposalAge = proposal_counters.rows[0].age;
                 console.log("____________54",proposal_counters.rows[0],proposal_counters.rows);
-                console.log("____________55",proposalAgeThreshold);
+                console.log("____________55",proposalAge,maxAge);
             }
+            console.log("proFUCKIT",proposalSupport && proposal.proposal_type in variables, proposal)
             if (proposalSupport && proposal.proposal_type in variables) {
                 console.log("____________12",proposalSupport.toInt(), member_count.toInt()/ 100.0 * variables[proposal.proposal_type])
                 const NeddedSupport =  member_count.toInt()/ 100.0 * variables[proposal.proposal_type];
                 console.log(proposalSupport.toInt() >= NeddedSupport, proposalSupport >= NeddedSupport )
                 if (proposalSupport >= NeddedSupport) {
                     await Proposals.UpdateStatus(proposal.proposal_id, true, nextPulse_id);
-                }else{
-                    if (proposalAgeThreshold < proposal.proposal_age) {
-                        await Proposals.UpdateStatus(proposal.proposal_id, false);
-                    }
-                }
-                
+                }       
             }else{
                 console.log("FuckIt");
             }
-
+            if (proposalAge > maxAge) {
+                await Proposals.UpdateStatus(proposal.proposal_id, false);
+            }
 
         }
         await PulseIncrementStatus(nextPulse_id, community_id, 0)
@@ -424,7 +422,12 @@ class Communities {
         console.log("_____99",variables)
         const xx1 = await this.handleOnTheAirProposals(community_id, variables)
         const xx2 = await this.OutThere_2_OnTheAir(community_id,variables)
-        const xx3 = await this.handle_members(community_id);
+        const [success, result] = await this.handle_members(community_id);
+        if (success) {
+          console.log(`handle_members succeeded with member_count = ${result}`);
+        } else {
+          console.log(`handle_members failed with error: ${result}`);
+        }
         console.log("OOOO",xx1,xx2)
     }
 
