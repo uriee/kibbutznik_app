@@ -64,10 +64,19 @@ class Pulses {
         return pulse_id
     }
 
-    static async PulseIncrementStatus(pulse_id,community_id, pulse_status) {
+    static async PulseIncrementStatus(pulse_id, community_id, pulse_status) {
         try{
             const db = DBClient.getInstance();
             pulse_status += 1
+            if (pulse_status == 1) {
+                const checkQuery = `SELECT * FROM Pulses WHERE community_id = ${community_id} AND pulse_status = 1`;
+                console.log("checkQuery", checkQuery);
+                const existingPulse = await db.execute(checkQuery);
+                if (existingPulse.rows.length > 0) {
+                        throw new Error(`A pulse with status 1 already exists in this community.`);
+             }
+            }
+
             // assuming pulse_status gets incremented by 1 and updated_at gets the current timestamp
             const query = `UPDATE Pulses SET pulse_status = ${pulse_status}, updated_at = totimestamp(now()) WHERE community_id = ${community_id} and pulse_id = ${pulse_id}`;
             xxx = await db.execute(query);
